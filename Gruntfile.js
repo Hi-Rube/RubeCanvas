@@ -20,7 +20,7 @@ module.exports = function(grunt) {
         watch: {
             scripts: {
                 files: ['react-temple/*.js'],
-                tasks: ['react'],
+                tasks: ['react', 'webpack'],
                 options: {
                     livereload: true
                 }
@@ -34,15 +34,26 @@ module.exports = function(grunt) {
                 dest: 'react-build',
                 ext: '.js'
             }
+        },
+        webpack: {
+            pack: {
+                entry: './react-build/test.js',
+                output: {
+                    filename: './react-build/test.js'
+                },
+                externals: {
+                    'react': 'window.React'
+                }
+            }
         }
     });
 
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-react');
+    grunt.loadNpmTasks('grunt-webpack');
 
-    grunt.registerTask('server', ['connect']);
-    grunt.registerTask('build', ['react']);
-    grunt.registerTask('listener', ['watch']);
-    grunt.registerTask('start', ['react', 'connect', 'watch']);
+    grunt.registerTask('server', ['connect', 'watch']);
+    grunt.registerTask('build', ['react', 'webpack']);
+    grunt.registerTask('start', ['react', 'webpack', 'connect', 'watch']);
 };

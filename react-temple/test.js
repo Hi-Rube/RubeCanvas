@@ -1,5 +1,3 @@
-var cvs = document.getElementById('cvs');
-var ctx = cvs.getContext('2d');
-ctx.moveTo(100,100);
-ctx.lineTo(200,100);
-ctx.stroke();
+var TestView = require('./TextView.js');
+var React = require('react');
+React.render(<TestView />,document.body);
