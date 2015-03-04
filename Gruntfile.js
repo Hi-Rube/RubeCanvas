@@ -5,14 +5,14 @@ module.exports = function(grunt) {
             options: {
                 port: 9000,
                 livereload: 35729,
-                hostname: 'localhost', //默认就是这个值，可配置为本机某个 IP，localhost 或域名
+                hostname: 'localhost' //默认就是这个值，可配置为本机某个 IP，localhost 或域名
             },
 
             server: {
                 options: {
                     open: true, //自动打开网页 http://
                     base: [
-                        './' //主目录
+                        './' //主目录   
                     ]
                 }
             }
@@ -37,12 +37,12 @@ module.exports = function(grunt) {
         },
         webpack: {
             pack: {
-                entry: './react-build/test.js',
+                entry: './react-build/main.js',
                 output: {
-                    filename: './react-build/test.js'
+                    filename: './react-build/build.js'
                 },
                 externals: {
-                    'react': 'window.React'
+                    'React': 'window.React'
                 }
             }
         }
