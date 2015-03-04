@@ -9,10 +9,12 @@ var h = window.innerHeight
   || document.body.clientHeight;
 
 var UIWindow = React.createClass({
-  getDefaultProps:function(){
-    return{defaultStyle:{
-      backgroundColor:'#000'
-    }};
+  getDefaultProps: function () {
+    return {
+      defaultStyle: {
+        backgroundColor: '#000'
+      }
+    };
   },
   getInitialState: function () {
     View.init.call(this.props, null);
@@ -25,22 +27,52 @@ var UIWindow = React.createClass({
         delete style[attr];
       }
     }
-    return{};
+    return {};
   },
-  componentWillMount: function(){
+  componentWillMount: function () {
   },
-  componentDidMount:function(){
+  componentDidMount: function () {
+    var canvas = document.getElementById('main');
+    var cxt = canvas.getContext('2d');
+    this.props.cxt = cxt;
+    (function (canvas, ctx) {
+      var devicePixelRatio = window.devicePixelRatio || 1;
+      var backingStorePixelRatio = ctx.webkitBackingStorePixelRatio ||
+        ctx.mozBackingStorePixelRatio ||
+        ctx.msBackingStorePixelRatio ||
+        ctx.oBackingStorePixelRatio ||
+        ctx.backingStorePixelRatio || 1;
+
+      var ratio = devicePixelRatio / backingStorePixelRatio;
+
+      if (devicePixelRatio !== backingStorePixelRatio) {
+        var oldWidth = canvas.width;
+        var oldHeight = canvas.height;
+
+        canvas.width = oldWidth * ratio;
+        canvas.height = oldHeight * ratio;
+
+        ctx.scale(ratio, ratio);
+      }
+
+    })(canvas, cxt);
+    this.draw(this.props.cxt);
   },
   render: function () {
-    return (<canvas id='main' style={{width: w, height: h}} />);
+    return (<canvas id='main' style={{width: 420, height: 247}} />);
   },
-  draw:function(){
+  draw: function (cxt) {
+    var img = new Image();
+    img.src = "http://lorempixel.com/360/420/cats/6/";
+    //img.src='/static/photo.jpg';
+    img.onload = function () {
+      cxt.drawImage(img, 0, 0, 360, 420, 0, 0, 144, 168);
+    }
+  },
+  layout: function () {
 
   },
-  layout:function(){
-
-  },
-  measure:function(){
+  measure: function () {
 
   }
 });
