@@ -44,15 +44,29 @@ var TextView = React.createClass({displayName: "TextView",
     return null;
   },
   draw: function (cxt) {
+    cxt.save();
     var style = this.state.style;
     cxt.fillStyle = style.backgroundColor;
+    cxt.beginPath();
+    cxt.rect(style.x, style.y, style.width, style.height);
+    cxt.closePath();
+    cxt.clip();
     cxt.fillRect(style.x, style.y, style.width, style.height);
+    var textStyle = cxt.measureText(style.text);
     cxt.fillStyle = style.color;
-    cxt.fillText(style.text, style.x + 100, style.y + 100, style.width);
+    cxt.fillText(style.text, style.x, style.y + textStyle.width, style.width);
+    cxt.restore();
   },
   measure: function (context, callback) {
     var selfStyle = this.state.style;
     var parentStyle = context.state.style;
+    (selfStyle.width != View.LayoutParams.matchParent && selfStyle.width != View.LayoutParams.wrapContent)
+    && (selfStyle.width *= Global.getBitX());
+    (selfStyle.height != View.LayoutParams.matchParent && selfStyle.height != View.LayoutParams.wrapContent)
+    && (selfStyle.height *= Global.getBitY());
+    selfStyle.x *= Global.getBitX();
+    selfStyle.y *= Global.getBitY();
+
     if (selfStyle.width == View.LayoutParams.matchParent) {
       selfStyle.width = parentStyle.width;
     }

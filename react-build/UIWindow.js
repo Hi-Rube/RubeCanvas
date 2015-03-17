@@ -13,9 +13,9 @@ var h = window.innerHeight
   || document.documentElement.clientHeight
   || document.body.clientHeight;
 
-if (Global.options.debug) {
-  w = w > 600 ? 600 : w;
-}
+/*if (Global.options.debug) {
+ w = w > 600 ? 600 : w;
+ }*/
 
 var bodyStyle = document.querySelectorAll('body')[0].style;
 bodyStyle.border = 0;
@@ -66,24 +66,30 @@ var UIWindow = React.createClass({displayName: "UIWindow",
       if (devicePixelRatio !== backingStorePixelRatio) {
         style.scaleRatio = ratio;
       }
-      Global.setDp(canvas.width * style.scaleRatio, canvas.height * style.scaleRatio);
       context.setState({style: style});
     })(canvas, cxt, this.state.style, this);
   },
   componentDidMount: function () {
     var canvas = document.getElementById('main');
+    var context = this;
+    canvas.addEventListener('touchstart', function () {
+      var style = context.state.style;
+      style.backgroundColor = '#000';
+      context.setState({style: style});
+    });
     var cxt = canvas.getContext('2d');
     var style = this.state.style;
     var ratio = style.scaleRatio;
-    if (ratio != 1) {
-      canvas.width = w * ratio;
-      canvas.height = h * ratio;
-      style.width = canvas.width;
-      style.height = canvas.height;
-      cxt.scale(ratio, ratio);
-    }
-    Global.setContext(cxt);
+
+    canvas.width = w * ratio;
+    canvas.height = h * ratio;
+    cxt.scale(ratio, ratio);
+
+    style.width = canvas.width;
+    style.height = canvas.height;
+    Global.setDp(w, h);
     this.setState({cxt: cxt, style: style});
+    Global.setContext(cxt);
     this.measure();
     this.draw(cxt, style);
     React.Children.forEach(this.props.children, function (children) {

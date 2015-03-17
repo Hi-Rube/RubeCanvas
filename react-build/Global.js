@@ -14,8 +14,8 @@ var Global = function () {
    * @param float h  实际高
    */
   this.setDp = function (w, h) {
-    wdpBit = w / 100;
-    hdpBit = h / 100;
+    wdpBit = parseFloat(w / 100);
+    hdpBit = parseFloat(h / 100);
   };
 
   /**
@@ -31,9 +31,17 @@ var Global = function () {
     }
   };
 
+  this.getBitX = function () {
+    return wdpBit;
+  };
+
+  this.getBitY = function () {
+    return hdpBit;
+  }
+
   var context = null;
   /** 设置上下文 **/
-  this.setContext = function(cxt){
+  this.setContext = function (cxt) {
     context = cxt;
   };
 

@@ -46,13 +46,12 @@
 
 	var TextView = __webpack_require__(2);
 	var UIWindow = __webpack_require__(3);
-	var View = __webpack_require__(4);
 	var React = __webpack_require__(1);
 	var styles = {
 			backgroundColor:'#ff0'
 	};
 	var props = { style:styles };
-	var props2 = {style:{width:View.LayoutParams.matchParent, height:View.LayoutParams.matchParent}}
+	var props2 = {style:{width:20, height:20,x:30,y:30}}
 	React.render(React.createElement(UIWindow, React.__spread({},  props), React.createElement(TextView, React.__spread({},  props2))), document.body);
 
 
@@ -68,8 +67,8 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var Global = __webpack_require__(5);
-	var View = __webpack_require__(4);
+	var Global = __webpack_require__(4);
+	var View = __webpack_require__(5);
 
 	var TextView = React.createClass({displayName: "TextView",
 	  /** 控件默认属性值 **/
@@ -113,15 +112,29 @@
 	    return null;
 	  },
 	  draw: function (cxt) {
+	    cxt.save();
 	    var style = this.state.style;
 	    cxt.fillStyle = style.backgroundColor;
+	    cxt.beginPath();
+	    cxt.rect(style.x, style.y, style.width, style.height);
+	    cxt.closePath();
+	    cxt.clip();
 	    cxt.fillRect(style.x, style.y, style.width, style.height);
+	    var textStyle = cxt.measureText(style.text);
 	    cxt.fillStyle = style.color;
-	    cxt.fillText(style.text, style.x + 100, style.y + 100, style.width);
+	    cxt.fillText(style.text, style.x, style.y + textStyle.width, style.width);
+	    cxt.restore();
 	  },
 	  measure: function (context, callback) {
 	    var selfStyle = this.state.style;
 	    var parentStyle = context.state.style;
+	    (selfStyle.width != View.LayoutParams.matchParent && selfStyle.width != View.LayoutParams.wrapContent)
+	    && (selfStyle.width *= Global.getBitX());
+	    (selfStyle.height != View.LayoutParams.matchParent && selfStyle.height != View.LayoutParams.wrapContent)
+	    && (selfStyle.height *= Global.getBitY());
+	    selfStyle.x *= Global.getBitX();
+	    selfStyle.y *= Global.getBitY();
+
 	    if (selfStyle.width == View.LayoutParams.matchParent) {
 	      selfStyle.width = parentStyle.width;
 	    }
@@ -141,8 +154,8 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var View = __webpack_require__(4);
-	var Global = __webpack_require__(5);
+	var View = __webpack_require__(5);
+	var Global = __webpack_require__(4);
 
 	var TextView = __webpack_require__(2);
 
@@ -155,9 +168,9 @@
 	  || document.documentElement.clientHeight
 	  || document.body.clientHeight;
 
-	if (Global.options.debug) {
-	  w = w > 600 ? 600 : w;
-	}
+	/*if (Global.options.debug) {
+	 w = w > 600 ? 600 : w;
+	 }*/
 
 	var bodyStyle = document.querySelectorAll('body')[0].style;
 	bodyStyle.border = 0;
@@ -208,24 +221,30 @@
 	      if (devicePixelRatio !== backingStorePixelRatio) {
 	        style.scaleRatio = ratio;
 	      }
-	      Global.setDp(canvas.width * style.scaleRatio, canvas.height * style.scaleRatio);
 	      context.setState({style: style});
 	    })(canvas, cxt, this.state.style, this);
 	  },
 	  componentDidMount: function () {
 	    var canvas = document.getElementById('main');
+	    var context = this;
+	    canvas.addEventListener('touchstart', function () {
+	      var style = context.state.style;
+	      style.backgroundColor = '#000';
+	      context.setState({style: style});
+	    });
 	    var cxt = canvas.getContext('2d');
 	    var style = this.state.style;
 	    var ratio = style.scaleRatio;
-	    if (ratio != 1) {
-	      canvas.width = w * ratio;
-	      canvas.height = h * ratio;
-	      style.width = canvas.width;
-	      style.height = canvas.height;
-	      cxt.scale(ratio, ratio);
-	    }
-	    Global.setContext(cxt);
+
+	    canvas.width = w * ratio;
+	    canvas.height = h * ratio;
+	    cxt.scale(ratio, ratio);
+
+	    style.width = canvas.width;
+	    style.height = canvas.height;
+	    Global.setDp(w, h);
 	    this.setState({cxt: cxt, style: style});
+	    Global.setContext(cxt);
 	    this.measure();
 	    this.draw(cxt, style);
 	    React.Children.forEach(this.props.children, function (children) {
@@ -266,6 +285,76 @@
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/**
+	 * Created by Rube on 15/3/5.
+	 * 记录运行过程中所需要的参数变量和状态等
+	 */
+
+	var Global = function () {
+	  /**
+	   * 宽高的单位值,max=100,按比例分配
+	   */
+	  var wdpBit, hdpBit;
+	  /**
+	   * 设置比例
+	   * @param float w  实际宽
+	   * @param float h  实际高
+	   */
+	  this.setDp = function (w, h) {
+	    wdpBit = parseFloat(w / 100);
+	    hdpBit = parseFloat(h / 100);
+	  };
+
+	  /**
+	   * 根据比例得到实际值
+	   * @param float wdp  宽比例值
+	   * @param float hdp  高比例值
+	   * @returns object {{w: number, h: number}}  宽高实际值
+	   */
+	  this.getDp = function (wdp, hdp) {
+	    return {
+	      w: wdp * wdpBit,
+	      h: hdp * hdpBit
+	    }
+	  };
+
+	  this.getBitX = function () {
+	    return wdpBit;
+	  };
+
+	  this.getBitY = function () {
+	    return hdpBit;
+	  }
+
+	  var context = null;
+	  /** 设置上下文 **/
+	  this.setContext = function (cxt) {
+	    context = cxt;
+	  };
+
+	  /** 获取上下文 **/
+	  this.getContext = function () {
+	    return context;
+	  };
+	};
+
+	/**
+	 * 全局配置信息
+	 * @type object
+	 */
+	var options = {
+	  debug: true                               //是否开启调试模式
+	};
+
+	Global.prototype.options = options;
+
+	module.exports = new Global();
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
 	var View = function () {
 	};
 
@@ -294,68 +383,6 @@
 	};
 
 	module.exports = new View();
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Created by Rube on 15/3/5.
-	 * 记录运行过程中所需要的参数变量和状态等
-	 */
-
-	var Global = function () {
-	  /**
-	   * 宽高的单位值,max=100,按比例分配
-	   */
-	  var wdpBit, hdpBit;
-	  /**
-	   * 设置比例
-	   * @param float w  实际宽
-	   * @param float h  实际高
-	   */
-	  this.setDp = function (w, h) {
-	    wdpBit = w / 100;
-	    hdpBit = h / 100;
-	  };
-
-	  /**
-	   * 根据比例得到实际值
-	   * @param float wdp  宽比例值
-	   * @param float hdp  高比例值
-	   * @returns object {{w: number, h: number}}  宽高实际值
-	   */
-	  this.getDp = function (wdp, hdp) {
-	    return {
-	      w: wdp * wdpBit,
-	      h: hdp * hdpBit
-	    }
-	  };
-
-	  var context = null;
-	  /** 设置上下文 **/
-	  this.setContext = function(cxt){
-	    context = cxt;
-	  };
-
-	  /** 获取上下文 **/
-	  this.getContext = function () {
-	    return context;
-	  };
-	};
-
-	/**
-	 * 全局配置信息
-	 * @type object
-	 */
-	var options = {
-	  debug: true                               //是否开启调试模式
-	};
-
-	Global.prototype.options = options;
-
-	module.exports = new Global();
-
 
 /***/ }
 /******/ ])
