@@ -46,12 +46,14 @@
 
 	var TextView = __webpack_require__(2);
 	var UIWindow = __webpack_require__(3);
+	var View = __webpack_require__(4);
 	var React = __webpack_require__(1);
 	var styles = {
-			backgroundColor:100
-	}
+			backgroundColor:'#ff0'
+	};
 	var props = { style:styles };
-	React.render(React.createElement(UIWindow, React.__spread({},  props)), document.body);
+	var props2 = {style:{width:View.LayoutParams.matchParent, height:View.LayoutParams.matchParent}}
+	React.render(React.createElement(UIWindow, React.__spread({},  props), React.createElement(TextView, React.__spread({},  props2))), document.body);
 
 
 
@@ -66,31 +68,70 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
+	var Global = __webpack_require__(5);
 	var View = __webpack_require__(4);
+
 	var TextView = React.createClass({displayName: "TextView",
-		getInitialState: function() {
-			View.init.call(this.props, null);
-			if (this.props.style) {
-				var style = this.props.style;
-				for (var attr in this.props.attrs) {
-					style[attr] && (this.props.attrs[attr] = style[attr]);
-					delete style[attr];
-				}
-			}
-			return {
-				go: 'fuck23'
-			};
-		},
-		change: function() {
-			React.Children.forEach(this.props.children, function(item) {
-				console.log(item);
-			});
-		},
-		render: function() {
-			return (React.createElement("div", null, " ", 
-							this.props.foo, 
-						" "));
-		}
+	  /** 控件默认属性值 **/
+	  getDefaultProps: function () {
+	    return {
+	      defaultStyle: {
+	        backgroundColor: '#fff',
+	        fontSize: 10,
+	        fontWeight: 2,
+	        color: '#000',
+	        text: '11'
+	      }
+	    };
+	  },
+	  getInitialState: function () {
+	    View.init.call(this.props, null);
+	    this.props.draw = this.draw;
+	    this.props.measure = this.measure;
+	    var style = this.props.attrs;
+	    for (var s in this.props.defaultStyle) {
+	      style[s] = this.props.defaultStyle[s];
+	    }
+	    if (this.props.style) {
+	      for (var s in this.props.style) {
+	        style[s] = this.props.style[s];
+	      }
+	    }
+	    return {
+	      style: style,
+	      cxt: null
+	    };
+	  },
+	  componentWillMount: function () {
+	  },
+	  componentDidMount: function () {
+	  },
+	  render: function () {
+	    if (Global.getContext()) {
+	      this.draw(Global.getContext());
+	    }
+	    return null;
+	  },
+	  draw: function (cxt) {
+	    var style = this.state.style;
+	    cxt.fillStyle = style.backgroundColor;
+	    cxt.fillRect(style.x, style.y, style.width, style.height);
+	    cxt.fillStyle = style.color;
+	    cxt.fillText(style.text, style.x + 100, style.y + 100, style.width);
+	  },
+	  measure: function (context, callback) {
+	    var selfStyle = this.state.style;
+	    var parentStyle = context.state.style;
+	    if (selfStyle.width == View.LayoutParams.matchParent) {
+	      selfStyle.width = parentStyle.width;
+	    }
+	    if (selfStyle.height == View.LayoutParams.matchParent) {
+	      selfStyle.height = parentStyle.height;
+	    }
+	    selfStyle.x += parentStyle.x;
+	    selfStyle.y += parentStyle.y;
+	    callback([selfStyle.x, selfStyle.y, selfStyle.width, selfStyle.height]);
+	  }
 	});
 
 	module.exports = TextView;
@@ -101,6 +142,11 @@
 
 	var React = __webpack_require__(1);
 	var View = __webpack_require__(4);
+	var Global = __webpack_require__(5);
+
+	var TextView = __webpack_require__(2);
+
+	/** 屏幕原始宽高获取 **/
 	var w = window.innerWidth
 	  || document.documentElement.clientWidth
 	  || document.body.clientWidth;
@@ -109,72 +155,108 @@
 	  || document.documentElement.clientHeight
 	  || document.body.clientHeight;
 
+	if (Global.options.debug) {
+	  w = w > 600 ? 600 : w;
+	}
+
+	var bodyStyle = document.querySelectorAll('body')[0].style;
+	bodyStyle.border = 0;
+	bodyStyle.margin = 0;
+	bodyStyle.padding = 0;
+	bodyStyle.background = '#000';
+
+
 	var UIWindow = React.createClass({displayName: "UIWindow",
+	  /** 控件默认属性值 **/
 	  getDefaultProps: function () {
 	    return {
 	      defaultStyle: {
-	        backgroundColor: '#000'
+	        backgroundColor: '#fff'
 	      }
 	    };
 	  },
+	  /** 控件配置参数初始化 **/
 	  getInitialState: function () {
 	    View.init.call(this.props, null);
+	    var style = this.props.attrs;
+	    for (var s in this.props.defaultStyle) {
+	      style[s] = this.props.defaultStyle[s];
+	    }
 	    if (this.props.style) {
-	      var style = this.props.style;
-	      var defaultStyle = this.props.defaultStyle;
-	      for (var attr in this.props.attrs) {
-	        style[attr] && (this.props.attrs[attr] = style[attr]) ||
-	        defaultStyle[attr] && (this.props.attrs[attr] = defaultStyle[attr]);
-	        delete style[attr];
+	      for (var s in this.props.style) {
+	        style[s] = this.props.style[s];
 	      }
 	    }
-	    return {};
+	    return {
+	      style: style,
+	      cxt: null
+	    };
 	  },
 	  componentWillMount: function () {
-	  },
-	  componentDidMount: function () {
-	    var canvas = document.getElementById('main');
+	    var canvas = document.createElement('canvas');
 	    var cxt = canvas.getContext('2d');
-	    this.props.cxt = cxt;
-	    (function (canvas, ctx) {
+	    /** 屏幕缩放计算 **/
+	    (function (canvas, ctx, style, context) {
 	      var devicePixelRatio = window.devicePixelRatio || 1;
 	      var backingStorePixelRatio = ctx.webkitBackingStorePixelRatio ||
 	        ctx.mozBackingStorePixelRatio ||
 	        ctx.msBackingStorePixelRatio ||
 	        ctx.oBackingStorePixelRatio ||
 	        ctx.backingStorePixelRatio || 1;
-
 	      var ratio = devicePixelRatio / backingStorePixelRatio;
-
+	      style.scaleRatio = 1;
 	      if (devicePixelRatio !== backingStorePixelRatio) {
-	        var oldWidth = canvas.width;
-	        var oldHeight = canvas.height;
-
-	        canvas.width = oldWidth * ratio;
-	        canvas.height = oldHeight * ratio;
-
-	        ctx.scale(ratio, ratio);
+	        style.scaleRatio = ratio;
 	      }
-
-	    })(canvas, cxt);
-	    this.draw(this.props.cxt);
+	      Global.setDp(canvas.width * style.scaleRatio, canvas.height * style.scaleRatio);
+	      context.setState({style: style});
+	    })(canvas, cxt, this.state.style, this);
+	  },
+	  componentDidMount: function () {
+	    var canvas = document.getElementById('main');
+	    var cxt = canvas.getContext('2d');
+	    var style = this.state.style;
+	    var ratio = style.scaleRatio;
+	    if (ratio != 1) {
+	      canvas.width = w * ratio;
+	      canvas.height = h * ratio;
+	      style.width = canvas.width;
+	      style.height = canvas.height;
+	      cxt.scale(ratio, ratio);
+	    }
+	    Global.setContext(cxt);
+	    this.setState({cxt: cxt, style: style});
+	    this.measure();
+	    this.draw(cxt, style);
+	    React.Children.forEach(this.props.children, function (children) {
+	      children.props.draw(cxt, style);
+	    });
 	  },
 	  render: function () {
-	    return (React.createElement("canvas", {id: "main", style: {width: 420, height: 247}}));
+	    var style = this.state.style;
+	    return (React.createElement("canvas", {id: "main", style: {
+	      width: w,
+	      height: h,
+	      backgroundColor: style.backgroundColor
+	    }}, this.props.children));
 	  },
-	  draw: function (cxt) {
-	    var img = new Image();
-	    img.src = "http://lorempixel.com/360/420/cats/6/";
-	    //img.src='/static/photo.jpg';
-	    img.onload = function () {
-	      cxt.drawImage(img, 0, 0, 360, 420, 0, 0, 144, 168);
-	    }
+	  /** 控件绘制 **/
+	  draw: function (cxt, attrs) {
+
 	  },
+	  /** 控件布局 **/
 	  layout: function () {
 
 	  },
+	  /** 控件布局计算 **/
 	  measure: function () {
-
+	    var cxt = this;
+	    var measureWork = function (params) {
+	      cxt.layout();
+	    };
+	    React.Children.forEach(this.props.children, function (children) {
+	      children.props.measure(cxt, measureWork);
+	    });
 	  }
 	});
 
@@ -184,37 +266,96 @@
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var View = function() {
+	var View = function () {
 	};
 
-	View.prototype.init = function() {
-		this.LayoutParams = {
-			matchParent: -1,
-			wrapContent: -2
-		};
-		this.attrs = {
-			width: this.LayoutParams.wrapContent,
-			height: this.LayoutParams.wrapContent,
-			paddingTop: null,
-			paddingRight: null,
-			paddingBottom: null,
-			paddingLeft: null,
-			padding: [null, null, null, null],
-			marginTop: null,
-			marginRight: null,
-			marginBottom: null,
-			marginLeft: null,
-			margin: [null, null, null, null],
-			borderTop: [null, null],
-			borderRight: [null, null],
-			borderBottom: [null, null],
-			borderLeft: [null, null],
-			border: [null, null],
-			backgroundColor: null
-		};
+	/**
+	 * View属性加载
+	 */
+	View.prototype.init = function () {
+	  /** 适应父级布局和适应内容布局 **/
+	  this.LayoutParams = {
+	    matchParent: -1,
+	    wrapContent: -2
+	  };
+	  /** View基本属性 **/
+	  this.attrs = {
+	    width: this.LayoutParams.wrapContent,
+	    height: this.LayoutParams.wrapContent,
+	    backgroundColor: '#fff',
+	    x: 0,
+	    y: 0
+	  };
+	};
+
+	View.prototype.LayoutParams = {
+	  matchParent: -1,
+	  wrapContent: -2
 	};
 
 	module.exports = new View();
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by Rube on 15/3/5.
+	 * 记录运行过程中所需要的参数变量和状态等
+	 */
+
+	var Global = function () {
+	  /**
+	   * 宽高的单位值,max=100,按比例分配
+	   */
+	  var wdpBit, hdpBit;
+	  /**
+	   * 设置比例
+	   * @param float w  实际宽
+	   * @param float h  实际高
+	   */
+	  this.setDp = function (w, h) {
+	    wdpBit = w / 100;
+	    hdpBit = h / 100;
+	  };
+
+	  /**
+	   * 根据比例得到实际值
+	   * @param float wdp  宽比例值
+	   * @param float hdp  高比例值
+	   * @returns object {{w: number, h: number}}  宽高实际值
+	   */
+	  this.getDp = function (wdp, hdp) {
+	    return {
+	      w: wdp * wdpBit,
+	      h: hdp * hdpBit
+	    }
+	  };
+
+	  var context = null;
+	  /** 设置上下文 **/
+	  this.setContext = function(cxt){
+	    context = cxt;
+	  };
+
+	  /** 获取上下文 **/
+	  this.getContext = function () {
+	    return context;
+	  };
+	};
+
+	/**
+	 * 全局配置信息
+	 * @type object
+	 */
+	var options = {
+	  debug: true                               //是否开启调试模式
+	};
+
+	Global.prototype.options = options;
+
+	module.exports = new Global();
+
 
 /***/ }
 /******/ ])
