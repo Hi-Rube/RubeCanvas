@@ -35,6 +35,10 @@ Page.prototype.mountNode = function (documentNode, node) {
   React.render(this._node, documentNode);
 };
 
+Page.prototype.getID = function(){
+  return this._id;
+};
+
 Page.create = function (node) {
   return new Page(node);
 };

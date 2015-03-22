@@ -11,6 +11,6 @@ var styles = {
 var props = { style:styles, action:'main' };
 var props2 = {style:{width:10, height:20}};
 var props3 = {style:{width:10, height:20, x:10, y:90, backgroundColor:'#0ff'}};
-var page1 = <UIWindow {...props} ><TextView {...props2}/><TextView {...props3}/></UIWindow>;
+var page1 = React.createElement(UIWindow, React.__spread({},  props), React.createElement(TextView, React.__spread({},  props2)), React.createElement(TextView, React.__spread({},  props3)));
 
 RC.Dev.boot([page1]);

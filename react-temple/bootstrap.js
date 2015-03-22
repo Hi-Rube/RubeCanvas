@@ -7,10 +7,9 @@ var Page = require('./Page');
 var Global = require('./Global');
 
 /**
- * pageList {array} page列表,在内存中
  * mainPage {object} 启动项page
  */
-var bootstrap = function () {
+var Bootstrap = function () {
   this.mainPage = null;
 };
 
@@ -18,19 +17,29 @@ var bootstrap = function () {
  * 程序初始化开始
  * @param list
  */
-bootstrap.prototype.start = function (list) {
-  (function (cxt) {
-    Array.forEach.call(list, function (item) {
-      var action = item.action;
-      var component = item.component;
-      var page = Page.create(component);
-      this.pageList.push(page);
-      if (action === 'main') {
-        cxt.mainPage = page;
-      }
-    });
-  })(this)
+Bootstrap.prototype.init = function (list) {
+  for (var i = 0; i < list.length; i++) {
+    var item = list[i];
+    var action = item.action;
+    var component = item.component;
+    var page = Page.create(component);
+    Global.addPageInPool(page.getID(), page);
+    if (action === 'main') {
+      this.mainPage = page;
+    }
+  }
 };
+
+Bootstrap.prototype.start = function (documentNode) {
+  if (documentNode) {
+    this.mainPage.mountNode(documentNode);
+  } else {
+    this.mainPage.mountNode(document.body);         //default mount on <body>
+  }
+  Global.pushPageInStack(this.mainPage);
+};
+
+module.exports = new Bootstrap();
 
 
 

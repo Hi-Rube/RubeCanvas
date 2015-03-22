@@ -36,9 +36,10 @@ var Global = function () {
   //page池
   var pagePool = {};
 
-  this.addPageInPool = function (list) {
-
+  this.addPageInPool = function (id, page) {
+    pagePool[id] = page;
   };
+
   /**
    * 宽高的单位值,max=100,按比例分配
    */

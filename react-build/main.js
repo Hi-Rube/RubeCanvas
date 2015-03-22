@@ -1,17 +1,20 @@
-/*var TextView = require('./TextView.js');
-var UIWindow = require('./UIWindow.js');
-var View = require('./View');
-var React = require('React');
-var Page = require('./Page');
-var styles = {
-		backgroundColor:'#ff0'
+function init(Global) {
+  var UIWindow = require('./UIWindow');
+  var UITextView = require('./UITextView');
+  var DeveloperTool = require('./developerTool');
+
+  Global['RC'] = Global['RubeCanvas'] = {
+    UI: {
+      Window: UIWindow,
+      TextView: UITextView
+    },
+    Dev: DeveloperTool
+  };
+
 };
-var props = { style:styles };
-var props2 = {style:{width:View.LayoutParams.matchParent, height:20}};
-var props3 = {style:{width:View.LayoutParams.matchParent, height:20, x:10, y:90, backgroundColor:'#0ff'}};
-React.render(<UIWindow {...props} ><TextView {...props2}/><TextView {...props3}/></UIWindow>, document.body);
 
-var a = Page.create();
-var b = Page.create();
+(function (Global) {
+  Global.RubeCanvasInit = init;
+  Global.RCInit = init;
+})(Window);
 
-console.log(a._id +''+ b._id);*/

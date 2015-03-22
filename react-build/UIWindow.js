@@ -2,7 +2,7 @@ var React = require('React');
 var View = require('./View');
 var Global = require('./Global');
 
-var TextView = require('./TextView');
+var TextView = require('./UITextView');
 
 /** 屏幕原始宽高获取 **/
 var w = window.innerWidth
