@@ -13,8 +13,9 @@ var h = window.innerHeight
   || document.documentElement.clientHeight
   || document.body.clientHeight;
 
-/*if (Global.options.debug) {
- w = w > 600 ? 600 : w;
+/*
+if (Global.options.debug) {
+ w = w > 400 ? 400 : w;
  }*/
 
 var bodyStyle = document.querySelectorAll('body')[0].style;
@@ -47,7 +48,13 @@ var UIWindow = React.createClass({displayName: "UIWindow",
     }
     return {
       style: style,
-      cxt: null
+      cxt: null,
+      touchPosition:{
+        nowX:null,
+        nowY:null,
+        startX:null,
+        startY:null
+      }
     };
   },
   componentWillMount: function () {
@@ -72,10 +79,23 @@ var UIWindow = React.createClass({displayName: "UIWindow",
   componentDidMount: function () {
     var canvas = document.getElementById('main');
     var context = this;
-    canvas.addEventListener('touchstart', function () {
-      var style = context.state.style;
-      style.backgroundColor = '#000';
-      context.setState({style: style});
+    canvas.addEventListener('touchstart', function (event) {
+      event.preventDefault();
+      var touch = event.touches[0];
+      var touchPosition = context.state.touchPosition;
+      touchPosition['startX'] = touch.pageX;
+      touchPosition['startY'] = touch.pageY;
+      touchPosition['nowX'] = touch.pageX;
+      touchPosition['nowY'] = touch.pageY;
+      context.setState({touchPosition: touchPosition});
+    });
+    canvas.addEventListener('touchmove', function (event) {
+      event.preventDefault();
+      var touch = event.touches[0];
+      var touchPosition = context.state.touchPosition;
+      touchPosition['nowX'] = touch.pageX;
+      touchPosition['nowY'] = touch.pageY;
+      context.setState({touchPosition: touchPosition});
     });
     var cxt = canvas.getContext('2d');
     var style = this.state.style;
@@ -97,6 +117,7 @@ var UIWindow = React.createClass({displayName: "UIWindow",
     });
   },
   render: function () {
+    console.log(this.state.touchPosition.nowX);
     var style = this.state.style;
     return (React.createElement("canvas", {id: "main", style: {
       width: w,

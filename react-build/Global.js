@@ -4,6 +4,41 @@
  */
 
 var Global = function () {
+  //唯一标识符产生器
+  var _id = 0
+  /**
+   * 获取唯一标识
+   * @returns {number}
+   */
+  this.getID = function () {
+    return _id++;
+  };
+
+  //page栈
+  var pageStack = [];
+  /**
+   * 添加page
+   * @param page
+   * @returns {Number} 栈内大小
+   */
+  this.pushPageInStack = function (page) {
+    return pageStack.push(page);
+  };
+
+  /**
+   * 获取栈顶page
+   * @returns {T}
+   */
+  this.popPageInStack = function () {
+    return pageStack.pop();
+  };
+
+  //page池
+  var pagePool = {};
+
+  this.addPageInPool = function (list) {
+
+  };
   /**
    * 宽高的单位值,max=100,按比例分配
    */
@@ -37,7 +72,7 @@ var Global = function () {
 
   this.getBitY = function () {
     return hdpBit;
-  }
+  };
 
   var context = null;
   /** 设置上下文 **/

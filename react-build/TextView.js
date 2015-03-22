@@ -8,10 +8,10 @@ var TextView = React.createClass({displayName: "TextView",
     return {
       defaultStyle: {
         backgroundColor: '#fff',
-        fontSize: 10,
+        fontSize: 20,
         fontWeight: 2,
         color: '#000',
-        text: '11'
+        text: '111111'
       }
     };
   },
@@ -54,7 +54,7 @@ var TextView = React.createClass({displayName: "TextView",
     cxt.fillRect(style.x, style.y, style.width, style.height);
     var textStyle = cxt.measureText(style.text);
     cxt.fillStyle = style.color;
-    cxt.fillText(style.text, style.x, style.y + textStyle.width, style.width);
+    cxt.fillText(style.text, style.x, style.y + style.fontSize, style.width);
     cxt.restore();
   },
   measure: function (context, callback) {
@@ -78,5 +78,7 @@ var TextView = React.createClass({displayName: "TextView",
     callback([selfStyle.x, selfStyle.y, selfStyle.width, selfStyle.height]);
   }
 });
+
+console.log(new TextView());
 
 module.exports = TextView;
