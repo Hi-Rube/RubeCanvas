@@ -1,8 +1,8 @@
 var React = require('React');
-var Global = require('./Global');
-var View = require('./View');
+var Global = require('./../Global');
+var View = require('./../View');
 
-var TextView = React.createClass({displayName: "TextView",
+var TextView = React.createClass({
   /** 控件默认属性值 **/
   getDefaultProps: function () {
     return {
@@ -78,7 +78,5 @@ var TextView = React.createClass({displayName: "TextView",
     callback([selfStyle.x, selfStyle.y, selfStyle.width, selfStyle.height]);
   }
 });
-
-console.log(new TextView());
 
 module.exports = TextView;

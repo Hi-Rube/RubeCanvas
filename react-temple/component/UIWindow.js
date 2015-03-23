@@ -1,6 +1,6 @@
 var React = require('React');
-var View = require('./View');
-var Global = require('./Global');
+var View = require('./../View');
+var Global = require('./../Global');
 
 var TextView = require('./UITextView');
 
@@ -117,7 +117,6 @@ var UIWindow = React.createClass({
     });
   },
   render: function () {
-    console.log(this.state.touchPosition.nowX);
     var style = this.state.style;
     return (<canvas id='main' style={{
       width: w,
