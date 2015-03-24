@@ -23,7 +23,7 @@ bodyStyle.padding = 0;
 bodyStyle.background = '#000';
 
 
-var UIWindow = React.createClass({
+var UIWindow = React.createClass({displayName: "UIWindow",
   /** 控件默认属性值 **/
   getDefaultProps: function () {
     return {
@@ -110,12 +110,12 @@ var UIWindow = React.createClass({
   render: function () {
     var style = this.state.style;
     return (
-      <canvas id='main' style={{
+      React.createElement("canvas", {id: "main", style: {
         width: w,
         height: h,
         backgroundColor: style.backgroundColor
-      }} >{this.props.children}
-      </canvas>
+      }}, this.props.children
+      )
     );
   },
   /** 控件绘制 **/

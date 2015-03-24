@@ -2,7 +2,7 @@ var React = require('React');
 var Global = require('./../Global');
 var View = require('./../View');
 var a = 1;
-var TextView = React.createClass({
+var TextView = React.createClass({displayName: "TextView",
   /** 控件默认属性值 **/
   getDefaultProps: function () {
     return {

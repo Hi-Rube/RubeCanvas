@@ -19,7 +19,7 @@ module.exports = function (grunt) {
     },
     watch: {
       scripts: {
-        files: ['react-temple/*.js', 'user/*.js'],
+        files: ['react-temple/**/*.js', 'user/*.js', 'react-temple/*.js'],
         tasks: ['react', 'webpack'],
         options: {
           livereload: true
@@ -31,13 +31,13 @@ module.exports = function (grunt) {
         files: [{
           expand: true,
           cwd: 'react-temple',
-          src: ['*.js'],
+          src: ['**/*.js'],
           dest: 'react-build',
           ext: '.js'
         }, {
           expand: true,
           cwd: 'user',
-          src: ['*.js'],
+          src: ['**/*.js'],
           dest: 'user-build',
           ext: '.js'
         }]
