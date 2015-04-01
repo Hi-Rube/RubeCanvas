@@ -1,8 +1,10 @@
 var React = require('React');
+var UImixin = require('./../mixins/UImixin');
 var Global = require('./../Global');
 var View = require('./../View');
-var a = 1;
+
 var TextView = React.createClass({
+  mixins:[UImixin],
   /** 控件默认属性值 **/
   getDefaultProps: function () {
     return {
@@ -13,11 +15,12 @@ var TextView = React.createClass({
         lineCount: null,
         singleLineNumber: 10,
         color: '#000',
-        text: '1canvas.measureText(selfStyle.text)canvas.measureText(selfStyle.text)canvas.measureText(selfStyle.text)canvas.measureText(selfStyle.text)sssssss'
+        text: '是'
       }
     };
   },
   getInitialState: function () {
+    this.props._id = Global.getID();
     View.init.call(this.props, null);
     this.props.draw = this.draw;
     this.props.measure = this.measure;
@@ -43,6 +46,9 @@ var TextView = React.createClass({
         y: null
       }
     };
+  },
+  componentWillMount: function () {
+    this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
   },
   render: function () {
     if (Global.getContext()) {
@@ -89,7 +95,7 @@ var TextView = React.createClass({
     }
     selfStyle.x += parentStyle.x;
     selfStyle.y += parentStyle.y;
-    this.setState({style:selfStyle});
+    this.setState({style: selfStyle});
     callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
   }
 });

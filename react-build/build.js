@@ -78,7 +78,8 @@
 
 	var React = __webpack_require__(6);
 	var View = __webpack_require__(5);
-	var Global = __webpack_require__(7);
+	var UImixin = __webpack_require__(7);
+	var Global = __webpack_require__(8);
 
 	/** 屏幕原始宽高获取 **/
 	var w = window.innerWidth
@@ -102,6 +103,7 @@
 
 
 	var UIWindow = React.createClass({displayName: "UIWindow",
+	  mixins:[UImixin],
 	  /** 控件默认属性值 **/
 	  getDefaultProps: function () {
 	    return {
@@ -112,6 +114,7 @@
 	  },
 	  /** 控件配置参数初始化 **/
 	  getInitialState: function () {
+	    this.props._id = Global.getID();
 	    View.init.call(this.props, null);
 	    var style = this.props.attrs;
 	    for (var s in this.props.defaultStyle) {
@@ -125,6 +128,7 @@
 	    return {
 	      style: style,
 	      actual: null,
+	      update: false,
 	      touchPosition: {
 	        nowX: null,
 	        nowY: null,
@@ -134,6 +138,7 @@
 	    };
 	  },
 	  componentWillMount: function () {
+	    this.buildNodeTree(this.props._page, -1, this.props._id, this);
 	    var canvas = document.createElement('canvas');
 	    var cxt = canvas.getContext('2d');
 	    /** 屏幕缩放计算 **/
@@ -175,14 +180,16 @@
 	      touchPosition['startY'] = touch.pageY;
 	      touchPosition['nowX'] = touch.pageX;
 	      touchPosition['nowY'] = touch.pageY;
-	      context.setState({touchPosition: touchPosition});
+	      context.setState({touchPosition: touchPosition, update: true});
 	    });
 	  },
-	  componentWillUpdate:function(){
-	    var style = this.state.style;
-	    if (Global.getContext()) {
-	      this.measure();
-	      this.draw(Global.getContext(), style);
+	  componentWillUpdate: function () {
+	    if (this.state.update) {
+	      var style = this.state.style;
+	      if (Global.getContext()) {
+	        this.measure();
+	        this.draw(Global.getContext(), style);
+	      }
 	    }
 	  },
 	  render: function () {
@@ -225,10 +232,12 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(6);
-	var Global = __webpack_require__(7);
+	var UImixin = __webpack_require__(7);
+	var Global = __webpack_require__(8);
 	var View = __webpack_require__(5);
-	var a = 1;
+
 	var TextView = React.createClass({displayName: "TextView",
+	  mixins:[UImixin],
 	  /** 控件默认属性值 **/
 	  getDefaultProps: function () {
 	    return {
@@ -239,11 +248,12 @@
 	        lineCount: null,
 	        singleLineNumber: 10,
 	        color: '#000',
-	        text: '1canvas.measureText(selfStyle.text)canvas.measureText(selfStyle.text)canvas.measureText(selfStyle.text)canvas.measureText(selfStyle.text)sssssss'
+	        text: '是'
 	      }
 	    };
 	  },
 	  getInitialState: function () {
+	    this.props._id = Global.getID();
 	    View.init.call(this.props, null);
 	    this.props.draw = this.draw;
 	    this.props.measure = this.measure;
@@ -269,6 +279,9 @@
 	        y: null
 	      }
 	    };
+	  },
+	  componentWillMount: function () {
+	    this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
 	  },
 	  render: function () {
 	    if (Global.getContext()) {
@@ -315,7 +328,7 @@
 	    }
 	    selfStyle.x += parentStyle.x;
 	    selfStyle.y += parentStyle.y;
-	    this.setState({style:selfStyle});
+	    this.setState({style: selfStyle});
 	    callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
 	  }
 	});
@@ -331,11 +344,14 @@
 	 */
 
 	var React = __webpack_require__(6);
-	var Global = __webpack_require__(7);
+	var UImixin = __webpack_require__(7);
+	var Global = __webpack_require__(8);
 	var View = __webpack_require__(5);
 
 	var LinearLayout = React.createClass({displayName: "LinearLayout",
+	  mixins:[UImixin],
 	  getInitialState: function () {
+	    this.props._id = Global.getID();
 	    View.init.call(this.props, null);
 	    this.props.draw = this.draw;
 	    this.props.measure = this.measure;
@@ -361,6 +377,9 @@
 	      style: style,
 	      actualStyle: null
 	    };
+	  },
+	  componentWillMount: function () {
+	    this.buildNodeTree(this.props._page,this.props._parent._id, this.props._id,this);
 	  },
 	  render: function () {
 	    if (Global.getContext()) {
@@ -390,7 +409,7 @@
 	      }
 	    };
 	    var measureWorkDone = function () {
-	      cxt.setState({style:runtimeStyle});
+	      cxt.setState({style: runtimeStyle});
 	    };
 	    React.Children.forEach(this.props.children, function (children, index) {
 	      children.props.measure(cxt, measureWork);
@@ -416,8 +435,8 @@
 	 */
 
 	var React = __webpack_require__(6);
-	var Global = __webpack_require__(7);
-	var bootstrap = __webpack_require__(8);
+	var Global = __webpack_require__(8);
+	var bootstrap = __webpack_require__(9);
 
 	var DeveloperTool = function () {
 	  this.version = 0.1;
@@ -443,6 +462,10 @@
 	  }
 	  bootstrap.init(processList);
 	  bootstrap.start(documentNode);
+	};
+
+	DeveloperTool.prototype.debug = function(){
+	  console.log(Global.getPagePool());
 	};
 
 	module.exports = new DeveloperTool();
@@ -492,6 +515,29 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
+	 * Created by Rube on 15/4/1.
+	 */
+	var UImixin = {
+	  buildNodeTree: function (page, parent, id, component) {
+	    page.addIdTreeNode(parent, id, component);
+	    React.Children.forEach(component.props.children, function (children) {
+	      children.props._page = page;
+	      if (children.props._parent) {
+	        children.props._parent['_id'] = id;
+	      } else {
+	        children.props._parent = {_id: id};
+	      }
+	    });
+	  }
+	};
+
+	module.exports = UImixin;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
 	 * Created by Rube on 15/3/5.
 	 * 记录运行过程中所需要的参数变量和状态等
 	 */
@@ -531,6 +577,10 @@
 
 	  this.addPageInPool = function (id, page) {
 	    pagePool[id] = page;
+	  };
+
+	  this.getPagePool = function(){
+	    return pagePool;
 	  };
 
 	  /**
@@ -594,7 +644,7 @@
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -602,8 +652,8 @@
 	 * RubeCanvas启动器,封装成page,压栈运行
 	 */
 
-	var Page = __webpack_require__(9);
-	var Global = __webpack_require__(7);
+	var Page = __webpack_require__(10);
+	var Global = __webpack_require__(8);
 
 	/**
 	 * mainPage {object} 启动项page
@@ -647,7 +697,7 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -656,8 +706,8 @@
 	 */
 
 	var React = __webpack_require__(6);
-	var Global = __webpack_require__(7);
-	var Tree = __webpack_require__(10);
+	var Global = __webpack_require__(8);
+	var Tree = __webpack_require__(11);
 
 	/**
 	 * 界面管理器
@@ -669,6 +719,7 @@
 	 */
 	var Page = function (node) {
 	  this._node = node ? node : null;
+	  this._node.props._page = this;
 	  this._id = Global.getID();
 	  this._documentNode = null;
 	  this._idTree = Tree.create();
@@ -695,7 +746,7 @@
 	  this._idTree.addNode(parent, id, component);
 	};
 
-	Page.prototype.getIdTreeNode = function(id){
+	Page.prototype.getIdTreeNode = function (id) {
 	  return this._idTree.getNode(id);
 	};
 
@@ -708,7 +759,7 @@
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**

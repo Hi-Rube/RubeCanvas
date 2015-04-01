@@ -27,3 +27,5 @@ var page1 =
     )
   );
 RC.Dev.boot([page1]);
+
+RC.Dev.debug();

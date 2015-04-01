@@ -1,5 +1,6 @@
 var React = require('React');
 var View = require('./../View');
+var UImixin = require('./../mixins/UImixin');
 var Global = require('./../Global');
 
 /** 屏幕原始宽高获取 **/
@@ -24,6 +25,7 @@ bodyStyle.background = '#000';
 
 
 var UIWindow = React.createClass({displayName: "UIWindow",
+  mixins:[UImixin],
   /** 控件默认属性值 **/
   getDefaultProps: function () {
     return {
@@ -34,6 +36,7 @@ var UIWindow = React.createClass({displayName: "UIWindow",
   },
   /** 控件配置参数初始化 **/
   getInitialState: function () {
+    this.props._id = Global.getID();
     View.init.call(this.props, null);
     var style = this.props.attrs;
     for (var s in this.props.defaultStyle) {
@@ -47,6 +50,7 @@ var UIWindow = React.createClass({displayName: "UIWindow",
     return {
       style: style,
       actual: null,
+      update: false,
       touchPosition: {
         nowX: null,
         nowY: null,
@@ -56,6 +60,7 @@ var UIWindow = React.createClass({displayName: "UIWindow",
     };
   },
   componentWillMount: function () {
+    this.buildNodeTree(this.props._page, -1, this.props._id, this);
     var canvas = document.createElement('canvas');
     var cxt = canvas.getContext('2d');
     /** 屏幕缩放计算 **/
@@ -97,14 +102,16 @@ var UIWindow = React.createClass({displayName: "UIWindow",
       touchPosition['startY'] = touch.pageY;
       touchPosition['nowX'] = touch.pageX;
       touchPosition['nowY'] = touch.pageY;
-      context.setState({touchPosition: touchPosition});
+      context.setState({touchPosition: touchPosition, update: true});
     });
   },
-  componentWillUpdate:function(){
-    var style = this.state.style;
-    if (Global.getContext()) {
-      this.measure();
-      this.draw(Global.getContext(), style);
+  componentWillUpdate: function () {
+    if (this.state.update) {
+      var style = this.state.style;
+      if (Global.getContext()) {
+        this.measure();
+        this.draw(Global.getContext(), style);
+      }
     }
   },
   render: function () {

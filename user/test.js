@@ -27,3 +27,5 @@ var page1 =
     </LinearLayout>
   </UIWindow>;
 RC.Dev.boot([page1]);
+
+RC.Dev.debug();

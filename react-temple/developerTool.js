@@ -33,4 +33,8 @@ DeveloperTool.prototype.boot = function (list, documentNode) {
   bootstrap.start(documentNode);
 };
 
+DeveloperTool.prototype.debug = function(){
+  console.log(Global.getPagePool());
+};
+
 module.exports = new DeveloperTool();

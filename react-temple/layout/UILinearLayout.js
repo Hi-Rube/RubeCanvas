@@ -3,11 +3,14 @@
  */
 
 var React = require('React');
+var UImixin = require('./../mixins/UImixin');
 var Global = require('./../Global');
 var View = require('./../View');
 
 var LinearLayout = React.createClass({
+  mixins:[UImixin],
   getInitialState: function () {
+    this.props._id = Global.getID();
     View.init.call(this.props, null);
     this.props.draw = this.draw;
     this.props.measure = this.measure;
@@ -33,6 +36,9 @@ var LinearLayout = React.createClass({
       style: style,
       actualStyle: null
     };
+  },
+  componentWillMount: function () {
+    this.buildNodeTree(this.props._page,this.props._parent._id, this.props._id,this);
   },
   render: function () {
     if (Global.getContext()) {
@@ -62,7 +68,7 @@ var LinearLayout = React.createClass({
       }
     };
     var measureWorkDone = function () {
-      cxt.setState({style:runtimeStyle});
+      cxt.setState({style: runtimeStyle});
     };
     React.Children.forEach(this.props.children, function (children, index) {
       children.props.measure(cxt, measureWork);

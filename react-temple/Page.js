@@ -17,6 +17,7 @@ var Tree = require('./Tree');
  */
 var Page = function (node) {
   this._node = node ? node : null;
+  this._node.props._page = this;
   this._id = Global.getID();
   this._documentNode = null;
   this._idTree = Tree.create();
@@ -43,7 +44,7 @@ Page.prototype.addIdTreeNode = function (parent, id, component) {
   this._idTree.addNode(parent, id, component);
 };
 
-Page.prototype.getIdTreeNode = function(id){
+Page.prototype.getIdTreeNode = function (id) {
   return this._idTree.getNode(id);
 };
 

@@ -40,6 +40,10 @@ var Global = function () {
     pagePool[id] = page;
   };
 
+  this.getPagePool = function(){
+    return pagePool;
+  };
+
   /**
    * 宽高的单位值,max=100,按比例分配
    */
