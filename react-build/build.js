@@ -47,14 +47,16 @@
 	function init(Global) {
 	  var UIWindow = __webpack_require__(1);
 	  var UITextView = __webpack_require__(2);
-	  var UILinearLayout = __webpack_require__(3);
-	  var DeveloperTool = __webpack_require__(4);
-	  var View = __webpack_require__(5);
+	  var UIImageView = __webpack_require__(3);
+	  var UILinearLayout = __webpack_require__(4);
+	  var DeveloperTool = __webpack_require__(5);
+	  var View = __webpack_require__(6);
 
 	  Global['RC'] = Global['RubeCanvas'] = {
 	    UI: {
 	      Window: UIWindow,
 	      TextView: UITextView,
+	      ImageView: UIImageView,
 	      LinearLayout: UILinearLayout
 	    },
 	    Dev: DeveloperTool,
@@ -78,10 +80,10 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var React = __webpack_require__(6);
-	var View = __webpack_require__(5);
-	var UImixin = __webpack_require__(7);
-	var Global = __webpack_require__(8);
+	var React = __webpack_require__(7);
+	var View = __webpack_require__(6);
+	var UImixin = __webpack_require__(8);
+	var Global = __webpack_require__(9);
 
 	/** 屏幕原始宽高获取 **/
 	var w = window.innerWidth
@@ -217,9 +219,19 @@
 	  },
 	  /** 控件布局 **/
 	  layout: function () {
+	    var cxt = this;
 	    var style = this.state.style;
-	    React.Children.forEach(this.props.children, function (children) {
-	      children.props.layout(0, 0, style.width, style.height);
+	    var layoutWork = function (children, childrenParams) {
+
+	    };
+	    var layoutWorkDone = function () {
+
+	    };
+	    React.Children.forEach(this.props.children, function (children, index) {
+	      children.props.layout(0, 0, style.width, style.height, layoutWork);
+	      if (index == cxt.props.children.length - 1) {
+	        layoutWorkDone();
+	      }
 	    });
 	  },
 	  /** 控件布局计算 **/
@@ -227,8 +239,14 @@
 	    var cxt = this;
 	    var measureWork = function (children, childrenParams) {
 	    };
-	    React.Children.forEach(this.props.children, function (children) {
+	    var measureWorkDone = function () {
+
+	    };
+	    React.Children.forEach(this.props.children, function (children, index) {
 	      children.props.measure(cxt, measureWork);
+	      if (index == cxt.props.children.length - 1) {
+	        measureWorkDone();
+	      }
 	    });
 	  }
 	});
@@ -239,11 +257,11 @@
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var React = __webpack_require__(6);
-	var UImixin = __webpack_require__(7);
-	var UIComponentMixin = __webpack_require__(9);
-	var Global = __webpack_require__(8);
-	var View = __webpack_require__(5);
+	var React = __webpack_require__(7);
+	var UImixin = __webpack_require__(8);
+	var UIComponentMixin = __webpack_require__(10);
+	var Global = __webpack_require__(9);
+	var View = __webpack_require__(6);
 
 	var TextView = React.createClass({displayName: "TextView",
 	  mixins: [UImixin, UIComponentMixin],
@@ -307,7 +325,7 @@
 	      selfStyle.y -= y;
 	    });
 	    if (callback) {
-	      callback(selfStyle.x, selfStyle.y, selfStyle.width, selfStyle.height);
+	      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
 	    }
 	  }
 	});
@@ -319,13 +337,91 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
+	 * Created by Rube on 15/4/3.
+	 */
+	var React = __webpack_require__(7);
+	var UImixin = __webpack_require__(8);
+	var UIComponentMixin = __webpack_require__(10);
+	var Global = __webpack_require__(9);
+	var View = __webpack_require__(6);
+
+	var ImageView = React.createClass({displayName: "ImageView",
+	  mixins: [UImixin, UIComponentMixin],
+	  /** 控件默认属性值 **/
+	  getDefaultProps: function () {
+	    return {
+	      defaultStyle: {
+	        image: '',
+	        backgroundColor: '#fff',
+	        color: '#000',
+	        src: './static/photo.jpg'
+	      }
+	    };
+	  },
+	  draw: function (cxt) {
+	    cxt.save();
+	    var style = this.state.actualStyle;
+	    cxt.fillStyle = style.backgroundColor;
+	    cxt.beginPath();
+	    cxt.rect(style.x, style.y, style.width, style.height);
+	    cxt.closePath();
+	    cxt.clip();
+	    cxt.fillRect(style.x, style.y, style.width, style.height);
+	    style.image.src = style.src;
+	    style.image.onload = function () {
+	      cxt.drawImage(style.image, 0, 0, style.image.width, style.image.height, style.x, style.y, style.width, style.height);
+	    };
+	    cxt.restore();
+	  },
+	  measure: function (parent, callback) {
+	    var selfStyle = this.state.style;
+	    var parentStyle = parent.state.style;
+	    var canvas = Global.getContext();
+	    var image = new Image();
+	    selfStyle.image = image;
+	    if (selfStyle.width == View.LayoutParams.matchParent) {
+	      selfStyle.width = parentStyle.width;
+	    }
+	    if (selfStyle.height == View.LayoutParams.matchParent) {
+	      selfStyle.height = parentStyle.height;
+	    }
+	    var textLength = canvas.measureText(selfStyle.text);
+	    if (selfStyle.height == View.LayoutParams.wrapContent) {
+	    }
+	    if (selfStyle.width == View.LayoutParams.wrapContent) {
+	    }
+	    this.setState({actualStyle: selfStyle, style: selfStyle, update: false});
+	    callback(this, {width: selfStyle.width, height: selfStyle.height});
+	  },
+	  layout: function (x, y, callback) {
+	    var selfStyle = this.state.style;
+	    selfStyle.x += x;
+	    selfStyle.y += y;
+	    this.setState({actualStyle: selfStyle, update: false}, function () {
+	      selfStyle.x -= x;
+	      selfStyle.y -= y;
+	    });
+	    if (callback) {
+	      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
+	    }
+	  }
+	});
+
+	module.exports = ImageView;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
 	 * Created by Rube on 15/3/23.
 	 */
 
-	var React = __webpack_require__(6);
-	var UImixin = __webpack_require__(7);
-	var Global = __webpack_require__(8);
-	var View = __webpack_require__(5);
+	var React = __webpack_require__(7);
+	var UImixin = __webpack_require__(8);
+	var Global = __webpack_require__(9);
+	var View = __webpack_require__(6);
 
 	var LinearLayout = React.createClass({displayName: "LinearLayout",
 	  mixins: [UImixin],
@@ -348,8 +444,8 @@
 	    && (style.width *= Global.getBitX());
 	    (style.height != View.LayoutParams.matchParent && style.height != View.LayoutParams.wrapContent)
 	    && (style.height *= Global.getBitY());
-	    style.x *= Global.getBitX();
-	    style.y *= Global.getBitY();
+	    (style.x != 'auto') && (style.x *= Global.getBitX());
+	    (style.y != 'auto') && (style.y *= Global.getBitY());
 	    return {
 	      style: style,
 	      update: true,
@@ -407,7 +503,8 @@
 	      }
 	    });
 	  },
-	  layout: function (x, y) {
+	  layout: function (x, y, callback) {
+	    var cxt = this;
 	    var selfStyle = this.state.style;
 	    selfStyle.x += x;
 	    selfStyle.y += y;
@@ -415,8 +512,17 @@
 	      selfStyle.x -= x;
 	      selfStyle.y -= y;
 	    });
-	    React.Children.forEach(this.props.children, function (children) {
-	      children.props.layout(selfStyle.x, selfStyle.y);
+	    var childrenPositionX = selfStyle.x;
+	    var childrenPositionY = selfStyle.y;
+	    var layoutWork = function (children, childrenParams) {
+	    };
+	    var layoutWorkDone = function () {
+	    };
+	    React.Children.forEach(this.props.children, function (children, index) {
+	      children.props.layout(childrenPositionX, childrenPositionY, layoutWork);
+	      if (index == cxt.props.children.length - 1) {
+	        layoutWorkDone();
+	      }
 	    });
 	  }
 	});
@@ -424,7 +530,7 @@
 	module.exports = LinearLayout;
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -432,9 +538,9 @@
 	 * 提供给开发者的接口
 	 */
 
-	var React = __webpack_require__(6);
-	var Global = __webpack_require__(8);
-	var bootstrap = __webpack_require__(10);
+	var React = __webpack_require__(7);
+	var Global = __webpack_require__(9);
+	var bootstrap = __webpack_require__(11);
 
 	var DeveloperTool = function () {
 	  this.version = 0.1;
@@ -470,7 +576,7 @@
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var View = function () {
@@ -503,13 +609,13 @@
 	module.exports = new View();
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = window.React;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -537,7 +643,7 @@
 	module.exports = UImixin;
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -647,14 +753,14 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Created by Rube on 15/4/3.
 	 */
-	var Global = __webpack_require__(8);
-	var View = __webpack_require__(5);
+	var Global = __webpack_require__(9);
+	var View = __webpack_require__(6);
 
 	var UIComponentMixin = {
 	  getInitialState: function () {
@@ -674,8 +780,8 @@
 	    && (style.width *= Global.getBitX());
 	    (style.height != View.LayoutParams.matchParent && style.height != View.LayoutParams.wrapContent)
 	    && (style.height *= Global.getBitY());
-	    style.x *= Global.getBitX();
-	    style.y *= Global.getBitY();
+	    (style.x != 'auto') && (style.x *= Global.getBitX());
+	    (style.y != 'auto') && (style.y *= Global.getBitY());
 	    return {
 	      update: true,
 	      style: style,
@@ -704,7 +810,7 @@
 	module.exports = UIComponentMixin;
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -712,8 +818,8 @@
 	 * RubeCanvas启动器,封装成page,压栈运行
 	 */
 
-	var Page = __webpack_require__(11);
-	var Global = __webpack_require__(8);
+	var Page = __webpack_require__(12);
+	var Global = __webpack_require__(9);
 
 	/**
 	 * mainPage {object} 启动项page
@@ -757,7 +863,7 @@
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -765,9 +871,9 @@
 	 * 界面管理器
 	 */
 
-	var React = __webpack_require__(6);
-	var Global = __webpack_require__(8);
-	var Tree = __webpack_require__(12);
+	var React = __webpack_require__(7);
+	var Global = __webpack_require__(9);
+	var Tree = __webpack_require__(13);
 
 	/**
 	 * 界面管理器
@@ -819,7 +925,7 @@
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**

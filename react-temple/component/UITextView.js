@@ -66,7 +66,7 @@ var TextView = React.createClass({
       selfStyle.y -= y;
     });
     if (callback) {
-      callback(selfStyle.x, selfStyle.y, selfStyle.width, selfStyle.height);
+      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
     }
   }
 });

@@ -137,9 +137,19 @@ var UIWindow = React.createClass({
   },
   /** 控件布局 **/
   layout: function () {
+    var cxt = this;
     var style = this.state.style;
-    React.Children.forEach(this.props.children, function (children) {
-      children.props.layout(0, 0, style.width, style.height);
+    var layoutWork = function (children, childrenParams) {
+
+    };
+    var layoutWorkDone = function () {
+
+    };
+    React.Children.forEach(this.props.children, function (children, index) {
+      children.props.layout(0, 0, style.width, style.height, layoutWork);
+      if (index == cxt.props.children.length - 1) {
+        layoutWorkDone();
+      }
     });
   },
   /** 控件布局计算 **/
@@ -147,8 +157,14 @@ var UIWindow = React.createClass({
     var cxt = this;
     var measureWork = function (children, childrenParams) {
     };
-    React.Children.forEach(this.props.children, function (children) {
+    var measureWorkDone = function () {
+
+    };
+    React.Children.forEach(this.props.children, function (children, index) {
       children.props.measure(cxt, measureWork);
+      if (index == cxt.props.children.length - 1) {
+        measureWorkDone();
+      }
     });
   }
 });

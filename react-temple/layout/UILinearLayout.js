@@ -28,8 +28,8 @@ var LinearLayout = React.createClass({
     && (style.width *= Global.getBitX());
     (style.height != View.LayoutParams.matchParent && style.height != View.LayoutParams.wrapContent)
     && (style.height *= Global.getBitY());
-    style.x *= Global.getBitX();
-    style.y *= Global.getBitY();
+    (style.x != 'auto') && (style.x *= Global.getBitX());
+    (style.y != 'auto') && (style.y *= Global.getBitY());
     return {
       style: style,
       update: true,
@@ -87,7 +87,8 @@ var LinearLayout = React.createClass({
       }
     });
   },
-  layout: function (x, y) {
+  layout: function (x, y, callback) {
+    var cxt = this;
     var selfStyle = this.state.style;
     selfStyle.x += x;
     selfStyle.y += y;
@@ -95,8 +96,17 @@ var LinearLayout = React.createClass({
       selfStyle.x -= x;
       selfStyle.y -= y;
     });
-    React.Children.forEach(this.props.children, function (children) {
-      children.props.layout(selfStyle.x, selfStyle.y);
+    var childrenPositionX = selfStyle.x;
+    var childrenPositionY = selfStyle.y;
+    var layoutWork = function (children, childrenParams) {
+    };
+    var layoutWorkDone = function () {
+    };
+    React.Children.forEach(this.props.children, function (children, index) {
+      children.props.layout(childrenPositionX, childrenPositionY, layoutWork);
+      if (index == cxt.props.children.length - 1) {
+        layoutWorkDone();
+      }
     });
   }
 });

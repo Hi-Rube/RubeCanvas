@@ -1,6 +1,7 @@
 function init(Global) {
   var UIWindow = require('./component/UIWindow');
   var UITextView = require('./component/UITextView');
+  var UIImageView = require('./component/UIImageView');
   var UILinearLayout = require('./layout/UILinearLayout');
   var DeveloperTool = require('./developerTool');
   var View = require('./View');
@@ -9,6 +10,7 @@ function init(Global) {
     UI: {
       Window: UIWindow,
       TextView: UITextView,
+      ImageView: UIImageView,
       LinearLayout: UILinearLayout
     },
     Dev: DeveloperTool,

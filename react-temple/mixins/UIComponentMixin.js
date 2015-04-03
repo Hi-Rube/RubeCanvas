@@ -22,8 +22,8 @@ var UIComponentMixin = {
     && (style.width *= Global.getBitX());
     (style.height != View.LayoutParams.matchParent && style.height != View.LayoutParams.wrapContent)
     && (style.height *= Global.getBitY());
-    style.x *= Global.getBitX();
-    style.y *= Global.getBitY();
+    (style.x != 'auto') && (style.x *= Global.getBitX());
+    (style.y != 'auto') && (style.y *= Global.getBitY());
     return {
       update: true,
       style: style,
