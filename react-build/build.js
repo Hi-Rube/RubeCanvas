@@ -196,9 +196,8 @@
 	        this.layout();
 	        this.draw(Global.getContext(), nextstate.actualStyle);
 	      }
-	      return true;
 	    }
-	    return false;
+	    return true;
 	  },
 	  render: function () {
 	    var style = this.state.actualStyle;
@@ -296,34 +295,33 @@
 	    var selfStyle = this.state.style;
 	    var parentStyle = parent.state.style;
 	    var canvas = Global.getContext();
+	    var currentWidth = selfStyle.width, currentHeight = selfStyle.height;
 	    if (selfStyle.width == View.LayoutParams.matchParent) {
-	      selfStyle.width = parentStyle.width;
+	      currentWidth = parentStyle.width;
 	    }
 	    if (selfStyle.height == View.LayoutParams.matchParent) {
-	      selfStyle.height = parentStyle.height;
+	      currentHeight = parentStyle.height;
 	    }
 	    var textLength = canvas.measureText(selfStyle.text);
 	    if (selfStyle.height == View.LayoutParams.wrapContent) {
-	      selfStyle.height = (textLength / selfStyle.fontSize * selfStyle.singleLineNumber + 1) * selfStyle.fontSize;
+	      currentHeight = (textLength / selfStyle.fontSize * selfStyle.singleLineNumber + 1) * selfStyle.fontSize;
 	    }
 	    if (selfStyle.width == View.LayoutParams.wrapContent) {
 	      if (textLength <= selfStyle.singleLineNumber * selfStyle.fontSize) {
-	        selfStyle.width = textLength;
+	        currentWidth = textLength;
 	      } else {
-	        selfStyle.width = selfStyle.singleLineNumber * selfStyle.fontSize;
+	        currentWidth = selfStyle.singleLineNumber * selfStyle.fontSize;
 	      }
 	    }
-	    this.setState({actualStyle: selfStyle, style: selfStyle, update: false});
+	    this.setState({actualStyle: {width: currentWidth, height: currentHeight}, update: false});
 	    callback(this, {width: selfStyle.width, height: selfStyle.height});
 	  },
 	  layout: function (x, y, callback) {
-	    var selfStyle = this.state.style;
+	    console.log(x,y)
+	    var selfStyle = Global.util.clone(this.state.style);
 	    selfStyle.x += x;
 	    selfStyle.y += y;
-	    this.setState({actualStyle: selfStyle, update: false}, function () {
-	      selfStyle.x -= x;
-	      selfStyle.y -= y;
-	    });
+	    this.setState({actualStyle: selfStyle, update: false});
 	    if (callback) {
 	      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
 	    }
@@ -351,7 +349,7 @@
 	  getDefaultProps: function () {
 	    return {
 	      defaultStyle: {
-	        image: '',
+	        image: new Image(),
 	        backgroundColor: '#fff',
 	        color: '#000',
 	        src: './static/photo.jpg'
@@ -359,48 +357,56 @@
 	    };
 	  },
 	  draw: function (cxt) {
+	    var context = this;
 	    cxt.save();
 	    var style = this.state.actualStyle;
+	    console.log(style)
+	    var selfStyle = this.state.style;
 	    cxt.fillStyle = style.backgroundColor;
 	    cxt.beginPath();
 	    cxt.rect(style.x, style.y, style.width, style.height);
 	    cxt.closePath();
 	    cxt.clip();
 	    cxt.fillRect(style.x, style.y, style.width, style.height);
-	    style.image.src = style.src;
-	    style.image.onload = function () {
+	    if (style.image.src) {
 	      cxt.drawImage(style.image, 0, 0, style.image.width, style.image.height, style.x, style.y, style.width, style.height);
-	    };
+	    } else {
+	      style.image.src = style.src;
+	      style.image.onload = function () {
+	        var flag = false;
+	        if (selfStyle.width == View.LayoutParams.wrapContent) {
+	          style.width = style.image.width;
+	          flag = true;
+	        }
+	        if (selfStyle.height == View.LayoutParams.wrapContent) {
+	          style.height = style.image.height;
+	          flag = true;
+	        }
+	        if (flag) {
+	          return context.setState({actualStyle: style, update: true});
+	        }
+	        cxt.drawImage(style.image, 0, 0, style.image.width, style.image.height, style.x, style.y, style.width, style.height);
+	      };
+	    }
 	    cxt.restore();
 	  },
 	  measure: function (parent, callback) {
-	    var selfStyle = this.state.style;
+	    var selfStyle = Global.util.clone(this.state.style);
 	    var parentStyle = parent.state.style;
-	    var canvas = Global.getContext();
-	    var image = new Image();
-	    selfStyle.image = image;
 	    if (selfStyle.width == View.LayoutParams.matchParent) {
 	      selfStyle.width = parentStyle.width;
 	    }
 	    if (selfStyle.height == View.LayoutParams.matchParent) {
 	      selfStyle.height = parentStyle.height;
 	    }
-	    var textLength = canvas.measureText(selfStyle.text);
-	    if (selfStyle.height == View.LayoutParams.wrapContent) {
-	    }
-	    if (selfStyle.width == View.LayoutParams.wrapContent) {
-	    }
-	    this.setState({actualStyle: selfStyle, style: selfStyle, update: false});
+	    this.setState({actualStyle: selfStyle, update: false});
 	    callback(this, {width: selfStyle.width, height: selfStyle.height});
 	  },
 	  layout: function (x, y, callback) {
-	    var selfStyle = this.state.style;
+	    var selfStyle = Global.util.clone(this.state.style);
 	    selfStyle.x += x;
 	    selfStyle.y += y;
-	    this.setState({actualStyle: selfStyle, update: false}, function () {
-	      selfStyle.x -= x;
-	      selfStyle.y -= y;
-	    });
+	    this.setState({actualStyle: selfStyle, update: false});
 	    if (callback) {
 	      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
 	    }
@@ -459,12 +465,15 @@
 	    if (nextstate.update) {
 	      var prevStyle = this.state.actualStyle;
 	      Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
+	    }
+	    return true;
+	  },
+	  componentDidUpdate: function (prevprops, prevstate) {
+	    if (this.state.update) {
 	      this.measure();
 	      this.layout();
 	      this.draw(Global.getContext());
-	      return true;
 	    }
-	    return false;
 	  },
 	  render: function () {
 	    return React.createElement('LinearLayout', null, this.props.children);
@@ -505,13 +514,10 @@
 	  },
 	  layout: function (x, y, callback) {
 	    var cxt = this;
-	    var selfStyle = this.state.style;
+	    var selfStyle = Global.util.clone(this.state.style);
 	    selfStyle.x += x;
 	    selfStyle.y += y;
-	    this.setState({actualStyle: selfStyle, update: false}, function () {
-	      selfStyle.x -= x;
-	      selfStyle.y -= y;
-	    });
+	    this.setState({actualStyle: selfStyle, update: false});
 	    var childrenPositionX = selfStyle.x;
 	    var childrenPositionY = selfStyle.y;
 	    var layoutWork = function (children, childrenParams) {
@@ -569,7 +575,7 @@
 	};
 
 	DeveloperTool.prototype.debug = function(){
-	  console.log(Global.getPagePool());
+	  //console.log(Global.getPagePool());
 	};
 
 	module.exports = new DeveloperTool();
@@ -624,16 +630,18 @@
 	var UImixin = {
 	  buildNodeTree: function (page, parent, id, component) {
 	    page.addIdTreeNode(parent, id, component);
+	    var cxt = this;
 	    React.Children.forEach(component.props.children, function (children) {
 	      children.props._page = page;
 	      if (children.props._parent) {
 	        children.props._parent['_id'] = id;
+	        children.props._parent['cxt'] = cxt;
 	      } else {
-	        children.props._parent = {_id: id};
+	        children.props._parent = {_id: id, cxt: cxt};
 	      }
 	    });
 	  },
-	  componentOperaInit:function(){
+	  componentOperaInit: function () {
 	    this.props.draw = this.draw;
 	    this.props.layout = this.layout;
 	    this.props.measure = this.measure;
@@ -688,7 +696,7 @@
 	    pagePool[id] = page;
 	  };
 
-	  this.getPagePool = function(){
+	  this.getPagePool = function () {
 	    return pagePool;
 	  };
 
@@ -747,7 +755,41 @@
 	  debug: false                               //是否开启调试模式
 	};
 
+
+	var util = {
+	  clone: function (obj) {
+	    //返回传递给他的任意对象的类
+	    function isClass(o) {
+	      if (o === null) return "Null";
+	      if (o === undefined) return "Undefined";
+	      return Object.prototype.toString.call(o).slice(8, -1);
+	    }
+
+	    var result, oClass = isClass(obj);
+	    //确定result的类型
+	    if (oClass === "Object") {
+	      result = {};
+	    } else if (oClass === "Array") {
+	      result = [];
+	    } else {
+	      return obj;
+	    }
+	    for (key in obj) {
+	      var copy = obj[key];
+	      if (isClass(copy) == "Object") {
+	        result[key] = arguments.callee(copy);//递归调用
+	      } else if (isClass(copy) == "Array") {
+	        result[key] = arguments.callee(copy);
+	      } else {
+	        result[key] = obj[key];
+	      }
+	    }
+	    return result;
+	  }
+	};
+
 	Global.prototype.options = options;
+	Global.prototype.util = util;
 
 	module.exports = new Global();
 
@@ -795,12 +837,13 @@
 	    if (nextstate.update) {
 	      var prevStyle = this.state.actualStyle;
 	      Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
-	      this.measure();
-	      this.layout();
-	      this.draw(Global.getContext());
-	      return true;
 	    }
-	    return false;
+	    return true;
+	  },
+	  componentDidUpdate: function (prevProps, prevState) {
+	    if (this.state.update) {
+	      this.draw(Global.getContext());
+	    }
 	  },
 	  render: function () {
 	    return null;

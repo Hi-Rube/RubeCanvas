@@ -114,9 +114,8 @@ var UIWindow = React.createClass({displayName: "UIWindow",
         this.layout();
         this.draw(Global.getContext(), nextstate.actualStyle);
       }
-      return true;
     }
-    return false;
+    return true;
   },
   render: function () {
     var style = this.state.actualStyle;

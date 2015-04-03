@@ -37,34 +37,33 @@ var TextView = React.createClass({displayName: "TextView",
     var selfStyle = this.state.style;
     var parentStyle = parent.state.style;
     var canvas = Global.getContext();
+    var currentWidth = selfStyle.width, currentHeight = selfStyle.height;
     if (selfStyle.width == View.LayoutParams.matchParent) {
-      selfStyle.width = parentStyle.width;
+      currentWidth = parentStyle.width;
     }
     if (selfStyle.height == View.LayoutParams.matchParent) {
-      selfStyle.height = parentStyle.height;
+      currentHeight = parentStyle.height;
     }
     var textLength = canvas.measureText(selfStyle.text);
     if (selfStyle.height == View.LayoutParams.wrapContent) {
-      selfStyle.height = (textLength / selfStyle.fontSize * selfStyle.singleLineNumber + 1) * selfStyle.fontSize;
+      currentHeight = (textLength / selfStyle.fontSize * selfStyle.singleLineNumber + 1) * selfStyle.fontSize;
     }
     if (selfStyle.width == View.LayoutParams.wrapContent) {
       if (textLength <= selfStyle.singleLineNumber * selfStyle.fontSize) {
-        selfStyle.width = textLength;
+        currentWidth = textLength;
       } else {
-        selfStyle.width = selfStyle.singleLineNumber * selfStyle.fontSize;
+        currentWidth = selfStyle.singleLineNumber * selfStyle.fontSize;
       }
     }
-    this.setState({actualStyle: selfStyle, style: selfStyle, update: false});
+    this.setState({actualStyle: {width: currentWidth, height: currentHeight}, update: false});
     callback(this, {width: selfStyle.width, height: selfStyle.height});
   },
   layout: function (x, y, callback) {
-    var selfStyle = this.state.style;
+    console.log(x,y)
+    var selfStyle = Global.util.clone(this.state.style);
     selfStyle.x += x;
     selfStyle.y += y;
-    this.setState({actualStyle: selfStyle, update: false}, function () {
-      selfStyle.x -= x;
-      selfStyle.y -= y;
-    });
+    this.setState({actualStyle: selfStyle, update: false});
     if (callback) {
       callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
     }

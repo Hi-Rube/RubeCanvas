@@ -37,12 +37,13 @@ var UIComponentMixin = {
     if (nextstate.update) {
       var prevStyle = this.state.actualStyle;
       Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
-      this.measure();
-      this.layout();
-      this.draw(Global.getContext());
-      return true;
     }
-    return false;
+    return true;
+  },
+  componentDidUpdate: function (prevProps, prevState) {
+    if (this.state.update) {
+      this.draw(Global.getContext());
+    }
   },
   render: function () {
     return null;

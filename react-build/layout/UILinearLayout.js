@@ -43,12 +43,15 @@ var LinearLayout = React.createClass({displayName: "LinearLayout",
     if (nextstate.update) {
       var prevStyle = this.state.actualStyle;
       Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
+    }
+    return true;
+  },
+  componentDidUpdate: function (prevprops, prevstate) {
+    if (this.state.update) {
       this.measure();
       this.layout();
       this.draw(Global.getContext());
-      return true;
     }
-    return false;
   },
   render: function () {
     return React.createElement('LinearLayout', null, this.props.children);
@@ -89,13 +92,10 @@ var LinearLayout = React.createClass({displayName: "LinearLayout",
   },
   layout: function (x, y, callback) {
     var cxt = this;
-    var selfStyle = this.state.style;
+    var selfStyle = Global.util.clone(this.state.style);
     selfStyle.x += x;
     selfStyle.y += y;
-    this.setState({actualStyle: selfStyle, update: false}, function () {
-      selfStyle.x -= x;
-      selfStyle.y -= y;
-    });
+    this.setState({actualStyle: selfStyle, update: false});
     var childrenPositionX = selfStyle.x;
     var childrenPositionY = selfStyle.y;
     var layoutWork = function (children, childrenParams) {

@@ -34,7 +34,7 @@ DeveloperTool.prototype.boot = function (list, documentNode) {
 };
 
 DeveloperTool.prototype.debug = function(){
-  console.log(Global.getPagePool());
+  //console.log(Global.getPagePool());
 };
 
 module.exports = new DeveloperTool();
