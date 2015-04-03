@@ -13,11 +13,9 @@ var UImixin = {
       }
     });
   },
-  componentOperaInit: function () {
+  componentOperaInit:function(){
     this.props.draw = this.draw;
-    if (this.layout) {
-      this.props.layout = this.layout;
-    }
+    this.props.layout = this.layout;
     this.props.measure = this.measure;
   }
 };

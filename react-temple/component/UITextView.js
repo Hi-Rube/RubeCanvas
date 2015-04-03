@@ -41,16 +41,13 @@ var TextView = React.createClass({
     return {
       update: true,
       style: style,
-      actualStyle: {
-        x: null,
-        y: null
-      }
+      actualStyle: style
     };
   },
   componentWillMount: function () {
     this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
   },
-  componentWillUpdate: function (nextprops, nextstate) {
+  shouldComponentUpdate: function (nextprops, nextstate) {
     if (nextstate.update) {
       this.draw(Global.getContext());
       return true;
@@ -62,7 +59,7 @@ var TextView = React.createClass({
   },
   draw: function (cxt) {
     cxt.save();
-    var style = this.state.style;
+    var style = this.state.actualStyle;
     cxt.fillStyle = style.backgroundColor;
     cxt.beginPath();
     cxt.rect(style.x, style.y, style.width, style.height);
@@ -74,8 +71,8 @@ var TextView = React.createClass({
     cxt.restore();
   },
   measure: function (parent, callback) {
-    var selfStyle = this.state.style;
-    var parentStyle = parent.state.style;
+    var selfStyle = this.state.actualStyle;
+    var parentStyle = parent.state.actualStyle;
     var canvas = Global.getContext();
     if (selfStyle.width == View.LayoutParams.matchParent) {
       selfStyle.width = parentStyle.width;
@@ -94,10 +91,17 @@ var TextView = React.createClass({
         selfStyle.width = selfStyle.singleLineNumber * selfStyle.fontSize;
       }
     }
-    selfStyle.x += parentStyle.x;
-    selfStyle.y += parentStyle.y;
-    this.setState({style: selfStyle, update: false});
-    callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
+    this.setState({actualStyle: selfStyle, update: false});
+    callback(this, {width: selfStyle.width, height: selfStyle.height});
+  },
+  layout: function (x, y, width, height, callback) {
+    var selfStyle = this.state.actualStyle;
+    selfStyle.x += x;
+    selfStyle.y += y;
+    this.setState({actualStyle: selfStyle, update: false});
+    if (callback) {
+      callback(selfStyle.x, selfStyle.y);
+    }
   }
 });
 

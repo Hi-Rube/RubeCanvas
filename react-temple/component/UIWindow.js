@@ -49,7 +49,7 @@ var UIWindow = React.createClass({
     }
     return {
       style: style,
-      actual: null,
+      actualStyle: style,
       update: true,
       touchPosition: {
         nowX: null,
@@ -76,7 +76,7 @@ var UIWindow = React.createClass({
       if (devicePixelRatio !== backingStorePixelRatio) {
         style.scaleRatio = ratio;
       }
-      context.setState({style: style});
+      context.setState({style: style, actualStyle: style, update: false});
     })(canvas, cxt, this.state.style, this);
   },
   componentDidMount: function () {
@@ -93,7 +93,7 @@ var UIWindow = React.createClass({
     style.width = canvas.width;
     style.height = canvas.height;
     Global.setContext(cxt);
-    this.setState({style: style});
+    this.setState({style: style, actualStyle: style, update: true});
     canvas.addEventListener('touchstart', function (event) {
       event.preventDefault();
       var touch = event.touches[0];
@@ -107,9 +107,10 @@ var UIWindow = React.createClass({
   },
   shouldComponentUpdate: function (nextprops, nextstate) {
     if (nextstate.update) {
-      var style = this.state.style;
+      var style = this.state.actualStyle;
       if (Global.getContext()) {
         this.measure();
+        this.layout();
         this.draw(Global.getContext(), style);
       }
       return true;
@@ -117,7 +118,7 @@ var UIWindow = React.createClass({
     return false;
   },
   render: function () {
-    var style = this.state.style;
+    var style = this.state.actualStyle;
     return (
       <canvas id='main' style={{
         width: w,
@@ -135,13 +136,16 @@ var UIWindow = React.createClass({
   },
   /** 控件布局 **/
   layout: function () {
-
+    var style = this.state.actualStyle;
+    React.Children.forEach(this.props.children, function (children) {
+      children.props.layout(0, 0, style.width, style.height);
+    });
   },
   /** 控件布局计算 **/
   measure: function () {
     var cxt = this;
     var measureWork = function (params) {
-      cxt.layout();
+
     };
     React.Children.forEach(this.props.children, function (children) {
       children.props.measure(cxt, measureWork);

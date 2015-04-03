@@ -33,13 +33,13 @@ var LinearLayout = React.createClass({
     return {
       style: style,
       update: true,
-      actualStyle: null
+      actualStyle: style
     };
   },
   componentWillMount: function () {
     this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
   },
-  componentWillUpdate: function (nextprops, nextstate) {
+  shouldComponentUpdate: function (nextprops, nextstate) {
     if (nextstate.update) {
       this.draw(Global.getContext());
       return true;
@@ -57,23 +57,24 @@ var LinearLayout = React.createClass({
   measure: function (parent, callback) {
     var cxt = this;
     var staticStyle = cxt.props.attrs;
-    var runtimeStyle = cxt.state.style;
-    var parentStyle = parent.state.style;
-    var measureWork = function (children, chilrenParams) {
-      if (chilrenParams.height > runtimeStyle.height || staticStyle.height == View.LayoutParams.wrapContent) {
-        runtimeStyle.height = chilrenParams.height;
+    var runtimeStyle = cxt.state.actualStyle;
+    var parentStyle = parent.state.actualStyle;
+    var measureWork = function (children, childrenParams) {
+      if (childrenParams.height > runtimeStyle.height || staticStyle.height == View.LayoutParams.wrapContent) {
+        runtimeStyle.height = childrenParams.height;
       }
       if (staticStyle.width == View.LayoutParams.wrapContent) {
         if (runtimeStyle.width == View.LayoutParams.wrapContent) {
-          runtimeStyle.width = chilrenParams.width;
+          runtimeStyle.width = childrenParams.width;
         } else {
-          runtimeStyle.width += chilrenParams.width;
+          runtimeStyle.width += childrenParams.width;
         }
         runtimeStyle.width = runtimeStyle.width > parentStyle.width ? parentStyle.width : runtimeStyle.width;
       }
     };
     var measureWorkDone = function () {
-      cxt.setState({style: runtimeStyle});
+      cxt.setState({actualStyle: runtimeStyle, update: false});
+      callback();
     };
     React.Children.forEach(this.props.children, function (children, index) {
       children.props.measure(cxt, measureWork);
@@ -82,8 +83,14 @@ var LinearLayout = React.createClass({
       }
     });
   },
-  layout: function () {
-
+  layout: function (x, y, width, height) {
+    var selfStyle = this.state.actualStyle;
+    selfStyle.x += x;
+    selfStyle.y += y;
+    this.setState({actualStyle: selfStyle, update: false});
+    React.Children.forEach(this.props.children, function (children) {
+      children.props.layout(selfStyle.x, selfStyle.y, width, height);
+    });
   }
 });
 

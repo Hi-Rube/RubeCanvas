@@ -16,7 +16,7 @@ var props2 = {style: {width: 50, height: 20, x: 30, y: 0}};
 var props3 = {style: {width: 50, height: 20, x: 0, y: 0, backgroundColor: '#0ff'}};
 var props4 = {style: {width: 20, height: 20, x: 30, y: 60, backgroundColor: '#f0f'}};
 var props5 = {style: {width: 30, height: 20, x: 0, y: 80, backgroundColor: '#00f'}};
-var props6 = {style: {width: LayoutParams.matchParent, x:10, y:10}};
+var props6 = {style: {width: LayoutParams.matchParent, x:25, y:0}};
 var page1 =
   React.createElement(UIWindow, React.__spread({},  props), 
     React.createElement(LinearLayout, React.__spread({},  props6), 
