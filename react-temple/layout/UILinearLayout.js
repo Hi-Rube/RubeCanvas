@@ -41,6 +41,10 @@ var LinearLayout = React.createClass({
   },
   shouldComponentUpdate: function (nextprops, nextstate) {
     if (nextstate.update) {
+      var prevStyle = this.state.actualStyle;
+      Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
+      this.measure();
+      this.layout();
       this.draw(Global.getContext());
       return true;
     }
@@ -50,15 +54,15 @@ var LinearLayout = React.createClass({
     return React.createElement('LinearLayout', null, this.props.children);
   },
   draw: function (cxt) {
-    React.Children.forEach(this.props.children, function (children, index) {
+    React.Children.forEach(this.props.children, function (children) {
       children.props.draw(cxt);
     });
   },
   measure: function (parent, callback) {
     var cxt = this;
-    var staticStyle = cxt.props.attrs;
-    var runtimeStyle = cxt.state.actualStyle;
-    var parentStyle = parent.state.actualStyle;
+    var staticStyle = cxt.state.style;
+    var runtimeStyle = cxt.state.style;
+    var parentStyle = parent.state.style;
     var measureWork = function (children, childrenParams) {
       if (childrenParams.height > runtimeStyle.height || staticStyle.height == View.LayoutParams.wrapContent) {
         runtimeStyle.height = childrenParams.height;
@@ -73,7 +77,7 @@ var LinearLayout = React.createClass({
       }
     };
     var measureWorkDone = function () {
-      cxt.setState({actualStyle: runtimeStyle, update: false});
+      cxt.setState({actualStyle: runtimeStyle, style: runtimeStyle, update: false});
       callback();
     };
     React.Children.forEach(this.props.children, function (children, index) {
@@ -84,10 +88,13 @@ var LinearLayout = React.createClass({
     });
   },
   layout: function (x, y, width, height) {
-    var selfStyle = this.state.actualStyle;
+    var selfStyle = this.state.style;
     selfStyle.x += x;
     selfStyle.y += y;
-    this.setState({actualStyle: selfStyle, update: false});
+    this.setState({actualStyle: selfStyle, update: false}, function () {
+      selfStyle.x -= x;
+      selfStyle.y -= y;
+    });
     React.Children.forEach(this.props.children, function (children) {
       children.props.layout(selfStyle.x, selfStyle.y, width, height);
     });

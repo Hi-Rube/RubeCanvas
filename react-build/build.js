@@ -187,11 +187,12 @@
 	  },
 	  shouldComponentUpdate: function (nextprops, nextstate) {
 	    if (nextstate.update) {
-	      var style = this.state.actualStyle;
+	      var prevStyle = this.state.actualStyle;
 	      if (Global.getContext()) {
+	        Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
 	        this.measure();
 	        this.layout();
-	        this.draw(Global.getContext(), style);
+	        this.draw(Global.getContext(), nextstate.actualStyle);
 	      }
 	      return true;
 	    }
@@ -209,14 +210,14 @@
 	    );
 	  },
 	  /** 控件绘制 **/
-	  draw: function (cxt, style) {
+	  draw: function (cxt) {
 	    React.Children.forEach(this.props.children, function (children) {
-	      children.props.draw(cxt, style);
+	      children.props.draw(cxt);
 	    });
 	  },
 	  /** 控件布局 **/
 	  layout: function () {
-	    var style = this.state.actualStyle;
+	    var style = this.state.style;
 	    React.Children.forEach(this.props.children, function (children) {
 	      children.props.layout(0, 0, style.width, style.height);
 	    });
@@ -290,6 +291,10 @@
 	  },
 	  shouldComponentUpdate: function (nextprops, nextstate) {
 	    if (nextstate.update) {
+	      var prevStyle = this.state.actualStyle;
+	      Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
+	      this.measure();
+	      this.layout();
 	      this.draw(Global.getContext());
 	      return true;
 	    }
@@ -312,8 +317,8 @@
 	    cxt.restore();
 	  },
 	  measure: function (parent, callback) {
-	    var selfStyle = this.state.actualStyle;
-	    var parentStyle = parent.state.actualStyle;
+	    var selfStyle = this.state.style;
+	    var parentStyle = parent.state.style;
 	    var canvas = Global.getContext();
 	    if (selfStyle.width == View.LayoutParams.matchParent) {
 	      selfStyle.width = parentStyle.width;
@@ -332,14 +337,17 @@
 	        selfStyle.width = selfStyle.singleLineNumber * selfStyle.fontSize;
 	      }
 	    }
-	    this.setState({actualStyle: selfStyle, update: false});
+	    this.setState({actualStyle: selfStyle, style: selfStyle, update: false});
 	    callback(this, {width: selfStyle.width, height: selfStyle.height});
 	  },
 	  layout: function (x, y, width, height, callback) {
-	    var selfStyle = this.state.actualStyle;
+	    var selfStyle = this.state.style;
 	    selfStyle.x += x;
 	    selfStyle.y += y;
-	    this.setState({actualStyle: selfStyle, update: false});
+	    this.setState({actualStyle: selfStyle, update: false}, function () {
+	      selfStyle.x -= x;
+	      selfStyle.y -= y;
+	    });
 	    if (callback) {
 	      callback(selfStyle.x, selfStyle.y);
 	    }
@@ -395,6 +403,10 @@
 	  },
 	  shouldComponentUpdate: function (nextprops, nextstate) {
 	    if (nextstate.update) {
+	      var prevStyle = this.state.actualStyle;
+	      Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
+	      this.measure();
+	      this.layout();
 	      this.draw(Global.getContext());
 	      return true;
 	    }
@@ -404,15 +416,15 @@
 	    return React.createElement('LinearLayout', null, this.props.children);
 	  },
 	  draw: function (cxt) {
-	    React.Children.forEach(this.props.children, function (children, index) {
+	    React.Children.forEach(this.props.children, function (children) {
 	      children.props.draw(cxt);
 	    });
 	  },
 	  measure: function (parent, callback) {
 	    var cxt = this;
-	    var staticStyle = cxt.props.attrs;
-	    var runtimeStyle = cxt.state.actualStyle;
-	    var parentStyle = parent.state.actualStyle;
+	    var staticStyle = cxt.state.style;
+	    var runtimeStyle = cxt.state.style;
+	    var parentStyle = parent.state.style;
 	    var measureWork = function (children, childrenParams) {
 	      if (childrenParams.height > runtimeStyle.height || staticStyle.height == View.LayoutParams.wrapContent) {
 	        runtimeStyle.height = childrenParams.height;
@@ -427,7 +439,7 @@
 	      }
 	    };
 	    var measureWorkDone = function () {
-	      cxt.setState({actualStyle: runtimeStyle, update: false});
+	      cxt.setState({actualStyle: runtimeStyle, style: runtimeStyle, update: false});
 	      callback();
 	    };
 	    React.Children.forEach(this.props.children, function (children, index) {
@@ -438,10 +450,13 @@
 	    });
 	  },
 	  layout: function (x, y, width, height) {
-	    var selfStyle = this.state.actualStyle;
+	    var selfStyle = this.state.style;
 	    selfStyle.x += x;
 	    selfStyle.y += y;
-	    this.setState({actualStyle: selfStyle, update: false});
+	    this.setState({actualStyle: selfStyle, update: false}, function () {
+	      selfStyle.x -= x;
+	      selfStyle.y -= y;
+	    });
 	    React.Children.forEach(this.props.children, function (children) {
 	      children.props.layout(selfStyle.x, selfStyle.y, width, height);
 	    });

@@ -107,11 +107,12 @@ var UIWindow = React.createClass({
   },
   shouldComponentUpdate: function (nextprops, nextstate) {
     if (nextstate.update) {
-      var style = this.state.actualStyle;
+      var prevStyle = this.state.actualStyle;
       if (Global.getContext()) {
+        Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
         this.measure();
         this.layout();
-        this.draw(Global.getContext(), style);
+        this.draw(Global.getContext(), nextstate.actualStyle);
       }
       return true;
     }
@@ -129,14 +130,14 @@ var UIWindow = React.createClass({
     );
   },
   /** 控件绘制 **/
-  draw: function (cxt, style) {
+  draw: function (cxt) {
     React.Children.forEach(this.props.children, function (children) {
-      children.props.draw(cxt, style);
+      children.props.draw(cxt);
     });
   },
   /** 控件布局 **/
   layout: function () {
-    var style = this.state.actualStyle;
+    var style = this.state.style;
     React.Children.forEach(this.props.children, function (children) {
       children.props.layout(0, 0, style.width, style.height);
     });

@@ -49,6 +49,10 @@ var TextView = React.createClass({
   },
   shouldComponentUpdate: function (nextprops, nextstate) {
     if (nextstate.update) {
+      var prevStyle = this.state.actualStyle;
+      Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
+      this.measure();
+      this.layout();
       this.draw(Global.getContext());
       return true;
     }
@@ -71,8 +75,8 @@ var TextView = React.createClass({
     cxt.restore();
   },
   measure: function (parent, callback) {
-    var selfStyle = this.state.actualStyle;
-    var parentStyle = parent.state.actualStyle;
+    var selfStyle = this.state.style;
+    var parentStyle = parent.state.style;
     var canvas = Global.getContext();
     if (selfStyle.width == View.LayoutParams.matchParent) {
       selfStyle.width = parentStyle.width;
@@ -91,14 +95,17 @@ var TextView = React.createClass({
         selfStyle.width = selfStyle.singleLineNumber * selfStyle.fontSize;
       }
     }
-    this.setState({actualStyle: selfStyle, update: false});
+    this.setState({actualStyle: selfStyle, style: selfStyle, update: false});
     callback(this, {width: selfStyle.width, height: selfStyle.height});
   },
   layout: function (x, y, width, height, callback) {
-    var selfStyle = this.state.actualStyle;
+    var selfStyle = this.state.style;
     selfStyle.x += x;
     selfStyle.y += y;
-    this.setState({actualStyle: selfStyle, update: false});
+    this.setState({actualStyle: selfStyle, update: false}, function () {
+      selfStyle.x -= x;
+      selfStyle.y -= y;
+    });
     if (callback) {
       callback(selfStyle.x, selfStyle.y);
     }
