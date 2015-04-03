@@ -15,8 +15,8 @@ View.prototype.init = function () {
     width: this.LayoutParams.wrapContent,
     height: this.LayoutParams.wrapContent,
     backgroundColor: '#fff',
-    x: 0,
-    y: 0
+    x: 'auto',
+    y: 'auto'
   };
 };
 

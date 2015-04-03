@@ -24,6 +24,12 @@ var page1 =
       React.createElement(TextView, React.__spread({},  props3)), 
       React.createElement(TextView, React.__spread({},  props4)), 
       React.createElement(TextView, React.__spread({},  props5))
+    ), 
+    React.createElement(LinearLayout, React.__spread({},  props6), 
+      React.createElement(TextView, React.__spread({},  props2)), 
+      React.createElement(TextView, React.__spread({},  props3)), 
+      React.createElement(TextView, React.__spread({},  props4)), 
+      React.createElement(TextView, React.__spread({},  props5))
     )
   );
 RC.Dev.boot([page1]);

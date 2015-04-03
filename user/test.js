@@ -25,6 +25,12 @@ var page1 =
       <TextView {...props4}/>
       <TextView {...props5}/>
     </LinearLayout>
+    <LinearLayout {...props6}>
+      <TextView {...props2}/>
+      <TextView {...props3}/>
+      <TextView {...props4}/>
+      <TextView {...props5}/>
+    </LinearLayout>
   </UIWindow>;
 RC.Dev.boot([page1]);
 

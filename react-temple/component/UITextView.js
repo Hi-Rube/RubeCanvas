@@ -1,10 +1,11 @@
 var React = require('React');
 var UImixin = require('./../mixins/UImixin');
+var UIComponentMixin = require('./../mixins/UIComponentMixin');
 var Global = require('./../Global');
 var View = require('./../View');
 
 var TextView = React.createClass({
-  mixins: [UImixin],
+  mixins: [UImixin, UIComponentMixin],
   /** 控件默认属性值 **/
   getDefaultProps: function () {
     return {
@@ -18,48 +19,6 @@ var TextView = React.createClass({
         text: '是'
       }
     };
-  },
-  getInitialState: function () {
-    this.props._id = Global.getID();
-    this.componentOperaInit();
-    View.init.call(this.props, null);
-    var style = this.props.attrs;
-    for (var s in this.props.defaultStyle) {
-      style[s] = this.props.defaultStyle[s];
-    }
-    if (this.props.style) {
-      for (var s in this.props.style) {
-        style[s] = this.props.style[s];
-      }
-    }
-    (style.width != View.LayoutParams.matchParent && style.width != View.LayoutParams.wrapContent)
-    && (style.width *= Global.getBitX());
-    (style.height != View.LayoutParams.matchParent && style.height != View.LayoutParams.wrapContent)
-    && (style.height *= Global.getBitY());
-    style.x *= Global.getBitX();
-    style.y *= Global.getBitY();
-    return {
-      update: true,
-      style: style,
-      actualStyle: style
-    };
-  },
-  componentWillMount: function () {
-    this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
-  },
-  shouldComponentUpdate: function (nextprops, nextstate) {
-    if (nextstate.update) {
-      var prevStyle = this.state.actualStyle;
-      Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
-      this.measure();
-      this.layout();
-      this.draw(Global.getContext());
-      return true;
-    }
-    return false;
-  },
-  render: function () {
-    return null;
   },
   draw: function (cxt) {
     cxt.save();
@@ -98,7 +57,7 @@ var TextView = React.createClass({
     this.setState({actualStyle: selfStyle, style: selfStyle, update: false});
     callback(this, {width: selfStyle.width, height: selfStyle.height});
   },
-  layout: function (x, y, width, height, callback) {
+  layout: function (x, y, callback) {
     var selfStyle = this.state.style;
     selfStyle.x += x;
     selfStyle.y += y;
@@ -107,7 +66,7 @@ var TextView = React.createClass({
       selfStyle.y -= y;
     });
     if (callback) {
-      callback(selfStyle.x, selfStyle.y);
+      callback(selfStyle.x, selfStyle.y, selfStyle.width, selfStyle.height);
     }
   }
 });

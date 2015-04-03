@@ -225,8 +225,7 @@
 	  /** 控件布局计算 **/
 	  measure: function () {
 	    var cxt = this;
-	    var measureWork = function (params) {
-
+	    var measureWork = function (children, childrenParams) {
 	    };
 	    React.Children.forEach(this.props.children, function (children) {
 	      children.props.measure(cxt, measureWork);
@@ -242,11 +241,12 @@
 
 	var React = __webpack_require__(6);
 	var UImixin = __webpack_require__(7);
+	var UIComponentMixin = __webpack_require__(9);
 	var Global = __webpack_require__(8);
 	var View = __webpack_require__(5);
 
 	var TextView = React.createClass({displayName: "TextView",
-	  mixins: [UImixin],
+	  mixins: [UImixin, UIComponentMixin],
 	  /** 控件默认属性值 **/
 	  getDefaultProps: function () {
 	    return {
@@ -260,48 +260,6 @@
 	        text: '是'
 	      }
 	    };
-	  },
-	  getInitialState: function () {
-	    this.props._id = Global.getID();
-	    this.componentOperaInit();
-	    View.init.call(this.props, null);
-	    var style = this.props.attrs;
-	    for (var s in this.props.defaultStyle) {
-	      style[s] = this.props.defaultStyle[s];
-	    }
-	    if (this.props.style) {
-	      for (var s in this.props.style) {
-	        style[s] = this.props.style[s];
-	      }
-	    }
-	    (style.width != View.LayoutParams.matchParent && style.width != View.LayoutParams.wrapContent)
-	    && (style.width *= Global.getBitX());
-	    (style.height != View.LayoutParams.matchParent && style.height != View.LayoutParams.wrapContent)
-	    && (style.height *= Global.getBitY());
-	    style.x *= Global.getBitX();
-	    style.y *= Global.getBitY();
-	    return {
-	      update: true,
-	      style: style,
-	      actualStyle: style
-	    };
-	  },
-	  componentWillMount: function () {
-	    this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
-	  },
-	  shouldComponentUpdate: function (nextprops, nextstate) {
-	    if (nextstate.update) {
-	      var prevStyle = this.state.actualStyle;
-	      Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
-	      this.measure();
-	      this.layout();
-	      this.draw(Global.getContext());
-	      return true;
-	    }
-	    return false;
-	  },
-	  render: function () {
-	    return null;
 	  },
 	  draw: function (cxt) {
 	    cxt.save();
@@ -340,7 +298,7 @@
 	    this.setState({actualStyle: selfStyle, style: selfStyle, update: false});
 	    callback(this, {width: selfStyle.width, height: selfStyle.height});
 	  },
-	  layout: function (x, y, width, height, callback) {
+	  layout: function (x, y, callback) {
 	    var selfStyle = this.state.style;
 	    selfStyle.x += x;
 	    selfStyle.y += y;
@@ -349,7 +307,7 @@
 	      selfStyle.y -= y;
 	    });
 	    if (callback) {
-	      callback(selfStyle.x, selfStyle.y);
+	      callback(selfStyle.x, selfStyle.y, selfStyle.width, selfStyle.height);
 	    }
 	  }
 	});
@@ -440,7 +398,7 @@
 	    };
 	    var measureWorkDone = function () {
 	      cxt.setState({actualStyle: runtimeStyle, style: runtimeStyle, update: false});
-	      callback();
+	      callback(cxt, {width: runtimeStyle.width, height: runtimeStyle.height});
 	    };
 	    React.Children.forEach(this.props.children, function (children, index) {
 	      children.props.measure(cxt, measureWork);
@@ -449,7 +407,7 @@
 	      }
 	    });
 	  },
-	  layout: function (x, y, width, height) {
+	  layout: function (x, y) {
 	    var selfStyle = this.state.style;
 	    selfStyle.x += x;
 	    selfStyle.y += y;
@@ -458,7 +416,7 @@
 	      selfStyle.y -= y;
 	    });
 	    React.Children.forEach(this.props.children, function (children) {
-	      children.props.layout(selfStyle.x, selfStyle.y, width, height);
+	      children.props.layout(selfStyle.x, selfStyle.y);
 	    });
 	  }
 	});
@@ -476,7 +434,7 @@
 
 	var React = __webpack_require__(6);
 	var Global = __webpack_require__(8);
-	var bootstrap = __webpack_require__(9);
+	var bootstrap = __webpack_require__(10);
 
 	var DeveloperTool = function () {
 	  this.version = 0.1;
@@ -532,8 +490,8 @@
 	    width: this.LayoutParams.wrapContent,
 	    height: this.LayoutParams.wrapContent,
 	    backgroundColor: '#fff',
-	    x: 0,
-	    y: 0
+	    x: 'auto',
+	    y: 'auto'
 	  };
 	};
 
@@ -693,11 +651,68 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
+	 * Created by Rube on 15/4/3.
+	 */
+	var Global = __webpack_require__(8);
+	var View = __webpack_require__(5);
+
+	var UIComponentMixin = {
+	  getInitialState: function () {
+	    this.props._id = Global.getID();
+	    this.componentOperaInit();
+	    View.init.call(this.props, null);
+	    var style = this.props.attrs;
+	    for (var s in this.props.defaultStyle) {
+	      style[s] = this.props.defaultStyle[s];
+	    }
+	    if (this.props.style) {
+	      for (var s in this.props.style) {
+	        style[s] = this.props.style[s];
+	      }
+	    }
+	    (style.width != View.LayoutParams.matchParent && style.width != View.LayoutParams.wrapContent)
+	    && (style.width *= Global.getBitX());
+	    (style.height != View.LayoutParams.matchParent && style.height != View.LayoutParams.wrapContent)
+	    && (style.height *= Global.getBitY());
+	    style.x *= Global.getBitX();
+	    style.y *= Global.getBitY();
+	    return {
+	      update: true,
+	      style: style,
+	      actualStyle: style
+	    };
+	  },
+	  componentWillMount: function () {
+	    this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
+	  },
+	  shouldComponentUpdate: function (nextprops, nextstate) {
+	    if (nextstate.update) {
+	      var prevStyle = this.state.actualStyle;
+	      Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
+	      this.measure();
+	      this.layout();
+	      this.draw(Global.getContext());
+	      return true;
+	    }
+	    return false;
+	  },
+	  render: function () {
+	    return null;
+	  }
+	};
+
+	module.exports = UIComponentMixin;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
 	 * Created by Rube on 15/3/21.
 	 * RubeCanvas启动器,封装成page,压栈运行
 	 */
 
-	var Page = __webpack_require__(10);
+	var Page = __webpack_require__(11);
 	var Global = __webpack_require__(8);
 
 	/**
@@ -742,7 +757,7 @@
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -752,7 +767,7 @@
 
 	var React = __webpack_require__(6);
 	var Global = __webpack_require__(8);
-	var Tree = __webpack_require__(11);
+	var Tree = __webpack_require__(12);
 
 	/**
 	 * 界面管理器
@@ -804,7 +819,7 @@
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**

@@ -145,8 +145,7 @@ var UIWindow = React.createClass({displayName: "UIWindow",
   /** 控件布局计算 **/
   measure: function () {
     var cxt = this;
-    var measureWork = function (params) {
-
+    var measureWork = function (children, childrenParams) {
     };
     React.Children.forEach(this.props.children, function (children) {
       children.props.measure(cxt, measureWork);
