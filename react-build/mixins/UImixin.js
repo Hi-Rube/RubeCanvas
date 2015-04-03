@@ -12,6 +12,13 @@ var UImixin = {
         children.props._parent = {_id: id};
       }
     });
+  },
+  componentOperaInit: function () {
+    this.props.draw = this.draw;
+    if (this.layout) {
+      this.props.layout = this.layout;
+    }
+    this.props.measure = this.measure;
   }
 };
 

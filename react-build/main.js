@@ -19,8 +19,10 @@ function init(Global) {
 
 };
 
-(function (Global) {
-  Global.RubeCanvasInit = init;
-  Global.RCInit = init;
-})(Window);
+if (Window) {
+  (function (Global) {
+    Global.RubeCanvasInit = init;
+    Global.RCInit = init;
+  })(Window);
+}
 

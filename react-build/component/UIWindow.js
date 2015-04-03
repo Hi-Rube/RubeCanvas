@@ -23,9 +23,8 @@ bodyStyle.margin = 0;
 bodyStyle.padding = 0;
 bodyStyle.background = '#000';
 
-
 var UIWindow = React.createClass({displayName: "UIWindow",
-  mixins:[UImixin],
+  mixins: [UImixin],
   /** 控件默认属性值 **/
   getDefaultProps: function () {
     return {
@@ -37,6 +36,7 @@ var UIWindow = React.createClass({displayName: "UIWindow",
   /** 控件配置参数初始化 **/
   getInitialState: function () {
     this.props._id = Global.getID();
+    this.componentOperaInit();
     View.init.call(this.props, null);
     var style = this.props.attrs;
     for (var s in this.props.defaultStyle) {
@@ -50,7 +50,7 @@ var UIWindow = React.createClass({displayName: "UIWindow",
     return {
       style: style,
       actual: null,
-      update: false,
+      update: true,
       touchPosition: {
         nowX: null,
         nowY: null,
@@ -105,14 +105,16 @@ var UIWindow = React.createClass({displayName: "UIWindow",
       context.setState({touchPosition: touchPosition, update: true});
     });
   },
-  componentWillUpdate: function () {
-    if (this.state.update) {
+  shouldComponentUpdate: function (nextprops, nextstate) {
+    if (nextstate.update) {
       var style = this.state.style;
       if (Global.getContext()) {
         this.measure();
         this.draw(Global.getContext(), style);
       }
+      return true;
     }
+    return false;
   },
   render: function () {
     var style = this.state.style;

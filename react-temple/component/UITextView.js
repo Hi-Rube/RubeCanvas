@@ -4,7 +4,7 @@ var Global = require('./../Global');
 var View = require('./../View');
 
 var TextView = React.createClass({
-  mixins:[UImixin],
+  mixins: [UImixin],
   /** 控件默认属性值 **/
   getDefaultProps: function () {
     return {
@@ -21,9 +21,8 @@ var TextView = React.createClass({
   },
   getInitialState: function () {
     this.props._id = Global.getID();
+    this.componentOperaInit();
     View.init.call(this.props, null);
-    this.props.draw = this.draw;
-    this.props.measure = this.measure;
     var style = this.props.attrs;
     for (var s in this.props.defaultStyle) {
       style[s] = this.props.defaultStyle[s];
@@ -40,6 +39,7 @@ var TextView = React.createClass({
     style.x *= Global.getBitX();
     style.y *= Global.getBitY();
     return {
+      update: true,
       style: style,
       actualStyle: {
         x: null,
@@ -50,10 +50,14 @@ var TextView = React.createClass({
   componentWillMount: function () {
     this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
   },
-  render: function () {
-    if (Global.getContext()) {
+  componentWillUpdate: function (nextprops, nextstate) {
+    if (nextstate.update) {
       this.draw(Global.getContext());
+      return true;
     }
+    return false;
+  },
+  render: function () {
     return null;
   },
   draw: function (cxt) {
@@ -68,9 +72,6 @@ var TextView = React.createClass({
     cxt.fillStyle = style.color;
     cxt.fillText(style.text, style.x, style.y + style.fontSize, style.width);
     cxt.restore();
-  },
-  layout: function (cxt, x, y, width, height) {
-
   },
   measure: function (parent, callback) {
     var selfStyle = this.state.style;
@@ -95,7 +96,7 @@ var TextView = React.createClass({
     }
     selfStyle.x += parentStyle.x;
     selfStyle.y += parentStyle.y;
-    this.setState({style: selfStyle});
+    this.setState({style: selfStyle, update: false});
     callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
   }
 });

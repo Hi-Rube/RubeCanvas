@@ -65,10 +65,12 @@
 
 	};
 
-	(function (Global) {
-	  Global.RubeCanvasInit = init;
-	  Global.RCInit = init;
-	})(Window);
+	if (Window) {
+	  (function (Global) {
+	    Global.RubeCanvasInit = init;
+	    Global.RCInit = init;
+	  })(Window);
+	}
 
 
 
@@ -101,9 +103,8 @@
 	bodyStyle.padding = 0;
 	bodyStyle.background = '#000';
 
-
 	var UIWindow = React.createClass({displayName: "UIWindow",
-	  mixins:[UImixin],
+	  mixins: [UImixin],
 	  /** 控件默认属性值 **/
 	  getDefaultProps: function () {
 	    return {
@@ -115,6 +116,7 @@
 	  /** 控件配置参数初始化 **/
 	  getInitialState: function () {
 	    this.props._id = Global.getID();
+	    this.componentOperaInit();
 	    View.init.call(this.props, null);
 	    var style = this.props.attrs;
 	    for (var s in this.props.defaultStyle) {
@@ -128,7 +130,7 @@
 	    return {
 	      style: style,
 	      actual: null,
-	      update: false,
+	      update: true,
 	      touchPosition: {
 	        nowX: null,
 	        nowY: null,
@@ -183,14 +185,16 @@
 	      context.setState({touchPosition: touchPosition, update: true});
 	    });
 	  },
-	  componentWillUpdate: function () {
-	    if (this.state.update) {
+	  shouldComponentUpdate: function (nextprops, nextstate) {
+	    if (nextstate.update) {
 	      var style = this.state.style;
 	      if (Global.getContext()) {
 	        this.measure();
 	        this.draw(Global.getContext(), style);
 	      }
+	      return true;
 	    }
+	    return false;
 	  },
 	  render: function () {
 	    var style = this.state.style;
@@ -237,7 +241,7 @@
 	var View = __webpack_require__(5);
 
 	var TextView = React.createClass({displayName: "TextView",
-	  mixins:[UImixin],
+	  mixins: [UImixin],
 	  /** 控件默认属性值 **/
 	  getDefaultProps: function () {
 	    return {
@@ -254,9 +258,8 @@
 	  },
 	  getInitialState: function () {
 	    this.props._id = Global.getID();
+	    this.componentOperaInit();
 	    View.init.call(this.props, null);
-	    this.props.draw = this.draw;
-	    this.props.measure = this.measure;
 	    var style = this.props.attrs;
 	    for (var s in this.props.defaultStyle) {
 	      style[s] = this.props.defaultStyle[s];
@@ -273,6 +276,7 @@
 	    style.x *= Global.getBitX();
 	    style.y *= Global.getBitY();
 	    return {
+	      update: true,
 	      style: style,
 	      actualStyle: {
 	        x: null,
@@ -283,10 +287,14 @@
 	  componentWillMount: function () {
 	    this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
 	  },
-	  render: function () {
-	    if (Global.getContext()) {
+	  componentWillUpdate: function (nextprops, nextstate) {
+	    if (nextstate.update) {
 	      this.draw(Global.getContext());
+	      return true;
 	    }
+	    return false;
+	  },
+	  render: function () {
 	    return null;
 	  },
 	  draw: function (cxt) {
@@ -301,9 +309,6 @@
 	    cxt.fillStyle = style.color;
 	    cxt.fillText(style.text, style.x, style.y + style.fontSize, style.width);
 	    cxt.restore();
-	  },
-	  layout: function (cxt, x, y, width, height) {
-
 	  },
 	  measure: function (parent, callback) {
 	    var selfStyle = this.state.style;
@@ -328,7 +333,7 @@
 	    }
 	    selfStyle.x += parentStyle.x;
 	    selfStyle.y += parentStyle.y;
-	    this.setState({style: selfStyle});
+	    this.setState({style: selfStyle, update: false});
 	    callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
 	  }
 	});
@@ -349,13 +354,11 @@
 	var View = __webpack_require__(5);
 
 	var LinearLayout = React.createClass({displayName: "LinearLayout",
-	  mixins:[UImixin],
+	  mixins: [UImixin],
 	  getInitialState: function () {
 	    this.props._id = Global.getID();
+	    this.componentOperaInit();
 	    View.init.call(this.props, null);
-	    this.props.draw = this.draw;
-	    this.props.measure = this.measure;
-	    this.props.layout = this.layout;
 	    var style = this.props.attrs;
 	    if (this.props.defaultStyle) {
 	      for (var s in this.props.defaultStyle) {
@@ -375,20 +378,27 @@
 	    style.y *= Global.getBitY();
 	    return {
 	      style: style,
+	      update: true,
 	      actualStyle: null
 	    };
 	  },
 	  componentWillMount: function () {
-	    this.buildNodeTree(this.props._page,this.props._parent._id, this.props._id,this);
+	    this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
+	  },
+	  componentWillUpdate: function (nextprops, nextstate) {
+	    if (nextstate.update) {
+	      this.draw(Global.getContext());
+	      return true;
+	    }
+	    return false;
 	  },
 	  render: function () {
-	    if (Global.getContext()) {
-	      this.draw();
-	    }
 	    return React.createElement('LinearLayout', null, this.props.children);
 	  },
-	  draw: function () {
-
+	  draw: function (cxt) {
+	    React.Children.forEach(this.props.children, function (children, index) {
+	      children.props.draw(cxt);
+	    });
 	  },
 	  measure: function (parent, callback) {
 	    var cxt = this;
@@ -528,6 +538,13 @@
 	        children.props._parent = {_id: id};
 	      }
 	    });
+	  },
+	  componentOperaInit: function () {
+	    this.props.draw = this.draw;
+	    if (this.layout) {
+	      this.props.layout = this.layout;
+	    }
+	    this.props.measure = this.measure;
 	  }
 	};
 

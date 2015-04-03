@@ -8,13 +8,11 @@ var Global = require('./../Global');
 var View = require('./../View');
 
 var LinearLayout = React.createClass({
-  mixins:[UImixin],
+  mixins: [UImixin],
   getInitialState: function () {
     this.props._id = Global.getID();
+    this.componentOperaInit();
     View.init.call(this.props, null);
-    this.props.draw = this.draw;
-    this.props.measure = this.measure;
-    this.props.layout = this.layout;
     var style = this.props.attrs;
     if (this.props.defaultStyle) {
       for (var s in this.props.defaultStyle) {
@@ -34,20 +32,27 @@ var LinearLayout = React.createClass({
     style.y *= Global.getBitY();
     return {
       style: style,
+      update: true,
       actualStyle: null
     };
   },
   componentWillMount: function () {
-    this.buildNodeTree(this.props._page,this.props._parent._id, this.props._id,this);
+    this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
+  },
+  componentWillUpdate: function (nextprops, nextstate) {
+    if (nextstate.update) {
+      this.draw(Global.getContext());
+      return true;
+    }
+    return false;
   },
   render: function () {
-    if (Global.getContext()) {
-      this.draw();
-    }
     return React.createElement('LinearLayout', null, this.props.children);
   },
-  draw: function () {
-
+  draw: function (cxt) {
+    React.Children.forEach(this.props.children, function (children, index) {
+      children.props.draw(cxt);
+    });
   },
   measure: function (parent, callback) {
     var cxt = this;
