@@ -32,7 +32,7 @@ var LinearLayout = React.createClass({displayName: "LinearLayout",
     (style.y != 'auto') && (style.y *= Global.getBitY());
     return {
       style: style,
-      update: true,
+      update: false,
       actualStyle: style
     };
   },

@@ -25,7 +25,7 @@ var UIComponentMixin = {
     (style.x != 'auto') && (style.x *= Global.getBitX());
     (style.y != 'auto') && (style.y *= Global.getBitY());
     return {
-      update: true,
+      update: false,
       style: style,
       actualStyle: style
     };

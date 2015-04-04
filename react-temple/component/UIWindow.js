@@ -76,7 +76,6 @@ var UIWindow = React.createClass({
       if (devicePixelRatio !== backingStorePixelRatio) {
         style.scaleRatio = ratio;
       }
-      context.setState({style: style, actualStyle: style, update: false});
     })(canvas, cxt, this.state.style, this);
   },
   componentDidMount: function () {
@@ -110,12 +109,16 @@ var UIWindow = React.createClass({
       var prevStyle = this.state.actualStyle;
       if (Global.getContext()) {
         Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
-        this.measure();
-        this.layout();
-        this.draw(Global.getContext(), nextstate.actualStyle);
       }
     }
     return true;
+  },
+  componentWillUpdate: function (prevprops, prevstate) {
+    if (this.state.update) {
+      this.measure();
+      this.layout();
+      this.draw(Global.getContext());
+    }
   },
   render: function () {
     var style = this.state.actualStyle;
@@ -157,7 +160,6 @@ var UIWindow = React.createClass({
     var measureWork = function (children, childrenParams) {
     };
     var measureWorkDone = function () {
-
     };
     React.Children.forEach(this.props.children, function (children, index) {
       children.props.measure(cxt, measureWork);

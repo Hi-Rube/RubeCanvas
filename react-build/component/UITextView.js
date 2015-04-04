@@ -59,7 +59,6 @@ var TextView = React.createClass({displayName: "TextView",
     callback(this, {width: selfStyle.width, height: selfStyle.height});
   },
   layout: function (x, y, callback) {
-    console.log(x,y)
     var selfStyle = Global.util.clone(this.state.style);
     selfStyle.x += x;
     selfStyle.y += y;
