@@ -50,7 +50,7 @@ var UIWindow = React.createClass({
     return {
       style: style,
       actualStyle: style,
-      update: true,
+      update: false,
       touchPosition: {
         nowX: null,
         nowY: null,
@@ -92,7 +92,7 @@ var UIWindow = React.createClass({
     style.width = canvas.width;
     style.height = canvas.height;
     Global.setContext(cxt);
-    this.setState({style: style, actualStyle: style, update: true});
+    this.invalidate({actualStyle: style});
     canvas.addEventListener('touchstart', function (event) {
       event.preventDefault();
       var touch = event.touches[0];
@@ -113,7 +113,7 @@ var UIWindow = React.createClass({
     }
     return true;
   },
-  componentWillUpdate: function (prevprops, prevstate) {
+  componentDidUpdate: function (prevprops, prevstate) {
     if (this.state.update) {
       this.measure();
       this.layout();
@@ -140,7 +140,7 @@ var UIWindow = React.createClass({
   /** 控件布局 **/
   layout: function () {
     var cxt = this;
-    var style = this.state.style;
+    var style = this.state.actualStyle;
     var layoutWork = function (children, childrenParams) {
 
     };
@@ -148,7 +148,7 @@ var UIWindow = React.createClass({
 
     };
     React.Children.forEach(this.props.children, function (children, index) {
-      children.props.layout(0, 0, style.width, style.height, layoutWork);
+      children.props.layout(0, 0, layoutWork);
       if (index == cxt.props.children.length - 1) {
         layoutWorkDone();
       }
@@ -167,6 +167,10 @@ var UIWindow = React.createClass({
         measureWorkDone();
       }
     });
+  },
+  invalidate: function (obj) {
+    obj['update'] = true;
+    this.setState(obj);
   }
 });
 

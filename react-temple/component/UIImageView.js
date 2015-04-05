@@ -24,7 +24,6 @@ var ImageView = React.createClass({
     var context = this;
     cxt.save();
     var style = this.state.actualStyle;
-    console.log(style)
     var selfStyle = this.state.style;
     cxt.fillStyle = style.backgroundColor;
     cxt.beginPath();
@@ -63,14 +62,14 @@ var ImageView = React.createClass({
     if (selfStyle.height == View.LayoutParams.matchParent) {
       selfStyle.height = parentStyle.height;
     }
-    this.setState({actualStyle: selfStyle, update: false});
+    this.state.actualStyle = selfStyle;
     callback(this, {width: selfStyle.width, height: selfStyle.height});
   },
   layout: function (x, y, callback) {
     var selfStyle = Global.util.clone(this.state.style);
     selfStyle.x += x;
     selfStyle.y += y;
-    this.setState({actualStyle: selfStyle, update: false});
+    this.state.actualStyle = selfStyle;
     if (callback) {
       callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
     }

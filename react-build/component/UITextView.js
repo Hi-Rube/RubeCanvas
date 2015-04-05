@@ -34,35 +34,35 @@ var TextView = React.createClass({displayName: "TextView",
     cxt.restore();
   },
   measure: function (parent, callback) {
-    var selfStyle = this.state.style;
+    var selfStyle = Global.util.clone(this.state.style);
     var parentStyle = parent.state.style;
     var canvas = Global.getContext();
     var currentWidth = selfStyle.width, currentHeight = selfStyle.height;
     if (selfStyle.width == View.LayoutParams.matchParent) {
-      currentWidth = parentStyle.width;
+      selfStyle.width = parentStyle.width;
     }
     if (selfStyle.height == View.LayoutParams.matchParent) {
-      currentHeight = parentStyle.height;
+      selfStyle.height = parentStyle.height;
     }
     var textLength = canvas.measureText(selfStyle.text);
     if (selfStyle.height == View.LayoutParams.wrapContent) {
-      currentHeight = (textLength / selfStyle.fontSize * selfStyle.singleLineNumber + 1) * selfStyle.fontSize;
+      selfStyle.height = (textLength / selfStyle.fontSize * selfStyle.singleLineNumber + 1) * selfStyle.fontSize;
     }
     if (selfStyle.width == View.LayoutParams.wrapContent) {
       if (textLength <= selfStyle.singleLineNumber * selfStyle.fontSize) {
-        currentWidth = textLength;
+        selfStyle.width = textLength;
       } else {
-        currentWidth = selfStyle.singleLineNumber * selfStyle.fontSize;
+        selfStyle.width = selfStyle.singleLineNumber * selfStyle.fontSize;
       }
     }
-    this.setState({actualStyle: {width: currentWidth, height: currentHeight}, update: false});
+    this.state.actualStyle = selfStyle;
     callback(this, {width: selfStyle.width, height: selfStyle.height});
   },
   layout: function (x, y, callback) {
     var selfStyle = Global.util.clone(this.state.style);
     selfStyle.x += x;
     selfStyle.y += y;
-    this.setState({actualStyle: selfStyle, update: false});
+    this.state.actualStyle = selfStyle;
     if (callback) {
       callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
     }

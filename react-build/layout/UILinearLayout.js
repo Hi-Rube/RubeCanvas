@@ -80,7 +80,6 @@ var LinearLayout = React.createClass({displayName: "LinearLayout",
       }
     };
     var measureWorkDone = function () {
-      cxt.setState({actualStyle: runtimeStyle, style: runtimeStyle, update: false});
       callback(cxt, {width: runtimeStyle.width, height: runtimeStyle.height});
     };
     React.Children.forEach(this.props.children, function (children, index) {
@@ -95,7 +94,7 @@ var LinearLayout = React.createClass({displayName: "LinearLayout",
     var selfStyle = Global.util.clone(this.state.style);
     selfStyle.x += x;
     selfStyle.y += y;
-    this.setState({actualStyle: selfStyle, update: false});
+    this.state.actualStyle = selfStyle;
     var childrenPositionX = selfStyle.x;
     var childrenPositionY = selfStyle.y;
     var layoutWork = function (children, childrenParams) {
@@ -108,6 +107,14 @@ var LinearLayout = React.createClass({displayName: "LinearLayout",
         layoutWorkDone();
       }
     });
+  },
+  invalidate: function (obj) {
+    if (obj) {
+      obj['update'] = true;
+    } else {
+      obj = {update: true};
+    }
+    this.setState(obj);
   }
 });
 
