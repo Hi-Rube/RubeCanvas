@@ -36,26 +36,26 @@ var TextView = React.createClass({displayName: "TextView",
   measure: function (parent, callback) {
     var selfStyle = this.state.style;
     var parentStyle = parent.state.style;
+    var actualStyle = this.state.actualStyle;
     var canvas = Global.getContext();
     if (selfStyle.width == View.LayoutParams.matchParent) {
-      selfStyle.width = parentStyle.width;
+      actualStyle.width = parentStyle.width;
     }
     if (selfStyle.height == View.LayoutParams.matchParent) {
-      selfStyle.height = parentStyle.height;
+      actualStyle.height = parentStyle.height;
     }
     var textLength = canvas.measureText(selfStyle.text);
     if (selfStyle.height == View.LayoutParams.wrapContent) {
-      selfStyle.height = (textLength / selfStyle.fontSize * selfStyle.singleLineNumber + 1) * selfStyle.fontSize;
+      actualStyle.height = (textLength / selfStyle.fontSize * selfStyle.singleLineNumber + 1) * selfStyle.fontSize;
     }
     if (selfStyle.width == View.LayoutParams.wrapContent) {
       if (textLength <= selfStyle.singleLineNumber * selfStyle.fontSize) {
-        selfStyle.width = textLength;
+        actualStyle.width = textLength;
       } else {
-        selfStyle.width = selfStyle.singleLineNumber * selfStyle.fontSize;
+        actualStyle.width = selfStyle.singleLineNumber * selfStyle.fontSize;
       }
     }
-    this.state.actualStyle = selfStyle;
-    callback(this, {width: selfStyle.width, height: selfStyle.height});
+    callback(this, {width: actualStyle.width, height: actualStyle.height});
   }
 });
 

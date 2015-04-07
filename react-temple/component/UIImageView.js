@@ -46,24 +46,23 @@ var ImageView = React.createClass({
           flag = true;
         }
         if (flag) {
-          return context.setState({actualStyle: style, update: true});
+          context.invalidate({actualStyle: style});
         }
-        cxt.drawImage(style.image, 0, 0, style.image.width, style.image.height, style.x, style.y, style.width, style.height);
       };
     }
     cxt.restore();
   },
   measure: function (parent, callback) {
     var selfStyle = Global.util.clone(this.state.style);
+    var actualStyle = this.state.actualStyle;
     var parentStyle = parent.state.style;
     if (selfStyle.width == View.LayoutParams.matchParent) {
-      selfStyle.width = parentStyle.width;
+      actualStyle.width = parentStyle.width;
     }
     if (selfStyle.height == View.LayoutParams.matchParent) {
-      selfStyle.height = parentStyle.height;
+      actualStyle.height = parentStyle.height;
     }
-    this.state.actualStyle = selfStyle;
-    callback(this, {width: selfStyle.width, height: selfStyle.height});
+    callback(this, {width: actualStyle.width, height: actualStyle.height});
   }
 });
 
