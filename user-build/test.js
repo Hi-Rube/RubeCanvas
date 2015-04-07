@@ -14,7 +14,7 @@ var styles = {
 };
 var props = {style: styles, action: 'main'};
 var props2 = {style: {width: 30, x: 30, y: 20, backgroundColor: '#fff'}};
-var props3 = {style: {width: LayoutParams.matchParent, height: 10, x: 3, y: 10, backgroundColor: '#0ff'}};
+var props3 = {style: {width: LayoutParams.matchParent, height: 10, x: 10, y: 5, backgroundColor: '#0ff'}};
 var props6 = {style: {width: LayoutParams.matchParent, x: 1, y: 10}};
 var props7 = {style: {width: LayoutParams.matchParent, x: 2, y: 20}};
 var props8 = {style: {width: 30, height: 90, x: 30, y: 20, backgroundColor: '#000'}};

@@ -37,6 +37,9 @@ var UIComponentMixin = {
     if (nextstate.update) {
       var prevStyle = this.state.actualStyle;
       Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
+    } else {
+      this.state = nextstate;
+      return false;
     }
     return true;
   },
@@ -47,6 +50,15 @@ var UIComponentMixin = {
   },
   render: function () {
     return null;
+  },
+  layout: function (x, y, callback) {
+    var selfStyle = Global.util.clone(this.state.style);
+    selfStyle.x += x;
+    selfStyle.y += y;
+    this.state.actualStyle = selfStyle;
+    if (callback) {
+      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
+    }
   }
 };
 

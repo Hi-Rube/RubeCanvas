@@ -110,6 +110,9 @@ var UIWindow = React.createClass({
       if (Global.getContext()) {
         Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
       }
+    } else {
+      this.state = nextstate;
+      return false;
     }
     return true;
   },

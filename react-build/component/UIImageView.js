@@ -64,15 +64,6 @@ var ImageView = React.createClass({displayName: "ImageView",
     }
     this.state.actualStyle = selfStyle;
     callback(this, {width: selfStyle.width, height: selfStyle.height});
-  },
-  layout: function (x, y, callback) {
-    var selfStyle = Global.util.clone(this.state.style);
-    selfStyle.x += x;
-    selfStyle.y += y;
-    this.state.actualStyle = selfStyle;
-    if (callback) {
-      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
-    }
   }
 });
 

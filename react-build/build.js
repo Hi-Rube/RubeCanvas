@@ -192,6 +192,9 @@
 	      if (Global.getContext()) {
 	        Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
 	      }
+	    } else {
+	      this.state = nextstate;
+	      return false;
 	    }
 	    return true;
 	  },
@@ -298,10 +301,9 @@
 	    cxt.restore();
 	  },
 	  measure: function (parent, callback) {
-	    var selfStyle = Global.util.clone(this.state.style);
+	    var selfStyle = this.state.style;
 	    var parentStyle = parent.state.style;
 	    var canvas = Global.getContext();
-	    var currentWidth = selfStyle.width, currentHeight = selfStyle.height;
 	    if (selfStyle.width == View.LayoutParams.matchParent) {
 	      selfStyle.width = parentStyle.width;
 	    }
@@ -321,15 +323,6 @@
 	    }
 	    this.state.actualStyle = selfStyle;
 	    callback(this, {width: selfStyle.width, height: selfStyle.height});
-	  },
-	  layout: function (x, y, callback) {
-	    var selfStyle = Global.util.clone(this.state.style);
-	    selfStyle.x += x;
-	    selfStyle.y += y;
-	    this.state.actualStyle = selfStyle;
-	    if (callback) {
-	      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
-	    }
 	  }
 	});
 
@@ -405,15 +398,6 @@
 	    }
 	    this.state.actualStyle = selfStyle;
 	    callback(this, {width: selfStyle.width, height: selfStyle.height});
-	  },
-	  layout: function (x, y, callback) {
-	    var selfStyle = Global.util.clone(this.state.style);
-	    selfStyle.x += x;
-	    selfStyle.y += y;
-	    this.state.actualStyle = selfStyle;
-	    if (callback) {
-	      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
-	    }
 	  }
 	});
 
@@ -848,6 +832,9 @@
 	    if (nextstate.update) {
 	      var prevStyle = this.state.actualStyle;
 	      Global.getContext().clearRect(prevStyle.x, prevStyle.y, prevStyle.width, prevStyle.height);
+	    } else {
+	      this.state = nextstate;
+	      return false;
 	    }
 	    return true;
 	  },
@@ -858,6 +845,15 @@
 	  },
 	  render: function () {
 	    return null;
+	  },
+	  layout: function (x, y, callback) {
+	    var selfStyle = Global.util.clone(this.state.style);
+	    selfStyle.x += x;
+	    selfStyle.y += y;
+	    this.state.actualStyle = selfStyle;
+	    if (callback) {
+	      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
+	    }
 	  }
 	};
 

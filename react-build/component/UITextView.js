@@ -34,10 +34,9 @@ var TextView = React.createClass({displayName: "TextView",
     cxt.restore();
   },
   measure: function (parent, callback) {
-    var selfStyle = Global.util.clone(this.state.style);
+    var selfStyle = this.state.style;
     var parentStyle = parent.state.style;
     var canvas = Global.getContext();
-    var currentWidth = selfStyle.width, currentHeight = selfStyle.height;
     if (selfStyle.width == View.LayoutParams.matchParent) {
       selfStyle.width = parentStyle.width;
     }
@@ -57,15 +56,6 @@ var TextView = React.createClass({displayName: "TextView",
     }
     this.state.actualStyle = selfStyle;
     callback(this, {width: selfStyle.width, height: selfStyle.height});
-  },
-  layout: function (x, y, callback) {
-    var selfStyle = Global.util.clone(this.state.style);
-    selfStyle.x += x;
-    selfStyle.y += y;
-    this.state.actualStyle = selfStyle;
-    if (callback) {
-      callback(this, {x: selfStyle.x, y: selfStyle.y, width: selfStyle.width, height: selfStyle.height});
-    }
   }
 });
 
