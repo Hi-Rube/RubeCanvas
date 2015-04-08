@@ -178,22 +178,17 @@
 	    Global.setContext(cxt);
 	    this.invalidate({actualStyle: style});
 	    canvas.addEventListener('touchstart', function (event) {
-	      var touch = event.touches[0];
 	      event.preventDefault();
+	      var touch = event.touches[0];
 	      context.props._page._idTree.iterationNode(function (node) {
 	        if (node.checkListener('touchstart', touch.pageX, touch.pageY)) {
-	          if (!node.responseListener('touchstart')) {
-	            return;
-	          }
+	          var isNext = node.responseListener('touchstart');
+	          (typeof isNext == 'undefined') && (isNext = true);
+	          return isNext;
+	        } else {
+	          return true;
 	        }
 	      });
-	      var touch = event.touches[0];
-	      var touchPosition = context.state.touchPosition;
-	      touchPosition['startX'] = touch.pageX;
-	      touchPosition['startY'] = touch.pageY;
-	      touchPosition['nowX'] = touch.pageX;
-	      touchPosition['nowY'] = touch.pageY;
-	      context.setState({touchPosition: touchPosition, update: true});
 	    });
 	  },
 	  shouldComponentUpdate: function (nextprops, nextstate) {
@@ -1118,8 +1113,12 @@
 	};
 
 	Tree.prototype.iterationNode = function (func) {
+	  var stopIterationNode = false;
 	  Array.prototype.forEach.call(this._nodeList, function (node) {
-	    func(node.value);
+	    if (!stopIterationNode) {
+	      var re = func(node.value);
+	      re || (stopIterationNode = true);
+	    }
 	  });
 	};
 

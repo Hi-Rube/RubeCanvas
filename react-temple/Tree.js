@@ -75,8 +75,12 @@ Tree.prototype.createList = function (listIndex) {
 };
 
 Tree.prototype.iterationNode = function (func) {
+  var stopIterationNode = false;
   Array.prototype.forEach.call(this._nodeList, function (node) {
-    func(node.value);
+    if (!stopIterationNode) {
+      var re = func(node.value);
+      re || (stopIterationNode = true);
+    }
   });
 };
 

@@ -30,5 +30,9 @@ RC.Dev.boot([page1]);
 RC.Dev.debug();
 
 page1.props._page.getIdTreeNode('cui').value.addListener('touchstart', function () {
-  alert(1);
+  console.log('cui');
+});
+
+page1.props._page.getIdTreeNode('text2').value.addListener('touchstart', function () {
+  console.log('text2');
 });
