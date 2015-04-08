@@ -1,11 +1,12 @@
 var React = require('React');
 var UImixin = require('./../mixins/UImixin');
 var UIComponentMixin = require('./../mixins/UIComponentMixin');
+var UIListenerMixin = require('./../mixins/UIListenerMixin');
 var Global = require('./../Global');
 var View = require('./../View');
 
 var TextView = React.createClass({
-  mixins: [UImixin, UIComponentMixin],
+  mixins: [UImixin, UIComponentMixin, UIListenerMixin],
   /** 控件默认属性值 **/
   getDefaultProps: function () {
     return {

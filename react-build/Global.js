@@ -129,6 +129,17 @@ var util = {
       }
     }
     return result;
+  },
+  checkArea: function (x1, y1, width, height, x0, y0) {
+    var x2 = x1 + width;
+    var y2 = y1 + height;
+    if ((x0 > Math.min(x1, x2)) && (x0 < Math.max(x1, x2)) &&
+      (y0 > Math.min(y1, y2)) && (y0 < Math.max(y1, y2))) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 };
 

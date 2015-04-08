@@ -12,9 +12,10 @@ var LayoutParams = RC.Params.Layout;
 var styles = {
   backgroundColor: '#ff0'
 };
-var props = {style: styles, action: 'main'};
-var props2 = {style: {width: 30, x: 30, y: 20, backgroundColor: '#fff'}};
-var props3 = {style: {width: LayoutParams.matchParent, height: 10, x: 10, y: 5, backgroundColor: '#0ff'}};
+var props = {id: 'window', style: styles, action: 'main'};
+var props2 = {id: 'cui', style: {width: 30, x: 30, y: 20, backgroundColor: '#fff'}};
+var props3 = {id: 'text1', style: {width: LayoutParams.matchParent, height: 10, x: 10, y: 5, backgroundColor: '#000'}};
+var props4 = {id: 'text2', style: {width: LayoutParams.matchParent, height: 10, x: 10, y: 5, backgroundColor: '#f0a'}};
 var props6 = {style: {width: LayoutParams.matchParent, x: 1, y: 10}};
 var props7 = {style: {width: LayoutParams.matchParent, x: 2, y: 20}};
 var props8 = {style: {width: 30, height: 90, x: 30, y: 20, backgroundColor: '#000'}};
@@ -23,7 +24,12 @@ var page1 =
   <UIWindow {...props} >
     <ImageView {...props2}/>
     <TextView {...props3}/>
+    <TextView {...props4}/>
   </UIWindow>;
 RC.Dev.boot([page1]);
-
 RC.Dev.debug();
+
+console.log(page1.props._page._idTree);
+page1.props._page.getIdTreeNode('cui').value.addListener('touchstart', function () {
+  alert(1);
+});

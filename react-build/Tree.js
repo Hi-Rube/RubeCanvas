@@ -10,6 +10,7 @@
  */
 var Tree = function () {
   this._nodeMap = {};
+  this._nodeList = [];              //BFS队列
   this.addNode(-1, -1, null);       //终止节点
 };
 
@@ -25,7 +26,9 @@ Tree.prototype.addNode = function (parentIndex, index, value) {
   }
   var node = {parentIndex: parentIndex, index: index, value: value, children: []};
   this._nodeMap[index] = node;
-  this._nodeMap[parentIndex].children.push(node);
+  if (index != parentIndex) {
+    this._nodeMap[parentIndex].children.push(node);
+  }
 };
 
 /** 获取对应id的节点 **/
@@ -49,6 +52,25 @@ Tree.prototype.deleteNode = function (index) {
 /** 更新节点信息 **/
 Tree.prototype.updateNode = function (index, value) {
   this._nodeMap[index].value = value;
+};
+
+//use BFS
+Tree.prototype.createList = function (listIndex) {
+  var cxt = this;
+  if (listIndex != null) {
+    var node = this._nodeList[listIndex];
+  } else {
+    listIndex = -1;
+    var node = this.getNode(-1);
+  }
+  Array.prototype.forEach.call(node.children, function (childrenNode) {
+    cxt._nodeList.push(childrenNode);
+  });
+  if (listIndex == this._nodeList.length - 1) {
+    return;
+  } else {
+    this.createList(listIndex + 1);
+  }
 };
 
 Tree.create = function () {

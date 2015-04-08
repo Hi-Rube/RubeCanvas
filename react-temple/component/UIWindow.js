@@ -2,6 +2,7 @@ var React = require('React');
 var View = require('./../View');
 var UImixin = require('./../mixins/UImixin');
 var Global = require('./../Global');
+var Tree = require('./../Tree');
 
 /** 屏幕原始宽高获取 **/
 var w = window.innerWidth
@@ -35,7 +36,7 @@ var UIWindow = React.createClass({
   },
   /** 控件配置参数初始化 **/
   getInitialState: function () {
-    this.props._id = Global.getID();
+    this.props._id = this.props.id || Global.getID();
     this.componentOperaInit();
     View.init.call(this.props, null);
     var style = this.props.attrs;
@@ -95,6 +96,9 @@ var UIWindow = React.createClass({
     this.invalidate({actualStyle: style});
     canvas.addEventListener('touchstart', function (event) {
       event.preventDefault();
+      Tree.iterationBFS(context.props._page._idTree, function(node){
+        console.log(node);
+      },context._id);
       var touch = event.touches[0];
       var touchPosition = context.state.touchPosition;
       touchPosition['startX'] = touch.pageX;

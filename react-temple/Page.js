@@ -34,6 +34,7 @@ Page.prototype.mountNode = function (documentNode, node) {
     this._node = node;
   }
   React.render(this._node, documentNode);
+  this._idTree.createList(null);
 };
 
 Page.prototype.getID = function () {

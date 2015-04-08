@@ -6,7 +6,7 @@ var View = require('./../View');
 
 var UIComponentMixin = {
   getInitialState: function () {
-    this.props._id = Global.getID();
+    this.props._id = this.props.id || Global.getID();
     this.componentOperaInit();
     View.init.call(this.props, null);
     var style = this.props.attrs;
@@ -32,6 +32,7 @@ var UIComponentMixin = {
   },
   componentWillMount: function () {
     this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
+    this.ListenerInit();
   },
   shouldComponentUpdate: function (nextprops, nextstate) {
     if (nextstate.update) {

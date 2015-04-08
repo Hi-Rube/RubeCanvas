@@ -84,6 +84,7 @@
 	var View = __webpack_require__(6);
 	var UImixin = __webpack_require__(8);
 	var Global = __webpack_require__(9);
+	var Tree = __webpack_require__(10);
 
 	/** 屏幕原始宽高获取 **/
 	var w = window.innerWidth
@@ -117,7 +118,7 @@
 	  },
 	  /** 控件配置参数初始化 **/
 	  getInitialState: function () {
-	    this.props._id = Global.getID();
+	    this.props._id = this.props.id || Global.getID();
 	    this.componentOperaInit();
 	    View.init.call(this.props, null);
 	    var style = this.props.attrs;
@@ -177,6 +178,9 @@
 	    this.invalidate({actualStyle: style});
 	    canvas.addEventListener('touchstart', function (event) {
 	      event.preventDefault();
+	      Tree.iterationBFS(context.props._page._idTree, function(node){
+	        console.log(node);
+	      },context._id);
 	      var touch = event.touches[0];
 	      var touchPosition = context.state.touchPosition;
 	      touchPosition['startX'] = touch.pageX;
@@ -267,12 +271,13 @@
 
 	var React = __webpack_require__(7);
 	var UImixin = __webpack_require__(8);
-	var UIComponentMixin = __webpack_require__(10);
+	var UIComponentMixin = __webpack_require__(11);
+	var UIListenerMixin = __webpack_require__(12);
 	var Global = __webpack_require__(9);
 	var View = __webpack_require__(6);
 
 	var TextView = React.createClass({displayName: "TextView",
-	  mixins: [UImixin, UIComponentMixin],
+	  mixins: [UImixin, UIComponentMixin, UIListenerMixin],
 	  /** 控件默认属性值 **/
 	  getDefaultProps: function () {
 	    return {
@@ -337,12 +342,13 @@
 	 */
 	var React = __webpack_require__(7);
 	var UImixin = __webpack_require__(8);
-	var UIComponentMixin = __webpack_require__(10);
+	var UIComponentMixin = __webpack_require__(11);
+	var UIListenerMixin = __webpack_require__(12);
 	var Global = __webpack_require__(9);
 	var View = __webpack_require__(6);
 
 	var ImageView = React.createClass({displayName: "ImageView",
-	  mixins: [UImixin, UIComponentMixin],
+	  mixins: [UImixin, UIComponentMixin, UIListenerMixin],
 	  /** 控件默认属性值 **/
 	  getDefaultProps: function () {
 	    return {
@@ -540,7 +546,7 @@
 
 	var React = __webpack_require__(7);
 	var Global = __webpack_require__(9);
-	var bootstrap = __webpack_require__(11);
+	var bootstrap = __webpack_require__(13);
 
 	var DeveloperTool = function () {
 	  this.version = 0.1;
@@ -779,6 +785,17 @@
 	      }
 	    }
 	    return result;
+	  },
+	  checkArea: function (x1, y1, width, height, x0, y0) {
+	    var x2 = x1 + width;
+	    var y2 = y1 + height;
+	    if ((x0 > Math.min(x1, x2)) && (x0 < Math.max(x1, x2)) &&
+	      (y0 > Math.min(y1, y2)) && (y0 < Math.max(y1, y2))) {
+	      return true;
+	    }
+	    else {
+	      return false;
+	    }
 	  }
 	};
 
@@ -793,6 +810,92 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
+	 * Created by Rube on 15/3/21.
+	 * 树型结构,用于构建page的id树等
+	 */
+
+	/**
+	 * Tree树型结构
+	 * _nodeStorage {object} 一个节点存储对象
+	 * _nodeMap {object} 一个节点引用存储对象,快速定位查找
+	 */
+	var Tree = function () {
+	  this._nodeMap = {};
+	  this._nodeList = [];              //BFS队列
+	  this.addNode(-1, -1, null);       //终止节点
+	};
+
+	/**
+	 * 添加节点
+	 * @param parentIndex {int} 父节点id值 (>=-1)
+	 * @param index {int} 当前节点id值 (>=-1)
+	 * @param value {*} 当前节点值
+	 */
+	Tree.prototype.addNode = function (parentIndex, index, value) {
+	  if (parentIndex < -1 || index < -1) {
+	    return new TypeError('parentIndex or index can not be lt -1');
+	  }
+	  var node = {parentIndex: parentIndex, index: index, value: value, children: []};
+	  this._nodeMap[index] = node;
+	  if (index != parentIndex) {
+	    this._nodeMap[parentIndex].children.push(node);
+	  }
+	};
+
+	/** 获取对应id的节点 **/
+	Tree.prototype.getNode = function (index) {
+	  return this._nodeMap[index];
+	};
+
+	/** 删除对应id的节点 **/
+	Tree.prototype.deleteNode = function (index) {
+	  var node = this._nodeMap[index];
+	  var parentNode = this._nodeMap[node.parentIndex];
+	  for (var i = 0; i < parentNode.children.length; i++) {
+	    if (parentNode.children[i].index === index) {
+	      Array.splice.call(parentNode.children, i, 1);
+	      break;
+	    }
+	  }
+	  delete this._nodeMap[index];
+	};
+
+	/** 更新节点信息 **/
+	Tree.prototype.updateNode = function (index, value) {
+	  this._nodeMap[index].value = value;
+	};
+
+	//use BFS
+	Tree.prototype.createList = function (listIndex) {
+	  var cxt = this;
+	  if (listIndex != null) {
+	    var node = this._nodeList[listIndex];
+	  } else {
+	    listIndex = -1;
+	    var node = this.getNode(-1);
+	  }
+	  Array.prototype.forEach.call(node.children, function (childrenNode) {
+	    cxt._nodeList.push(childrenNode);
+	  });
+	  if (listIndex == this._nodeList.length - 1) {
+	    return;
+	  } else {
+	    this.createList(listIndex + 1);
+	  }
+	};
+
+	Tree.create = function () {
+	  return new Tree();
+	};
+
+	module.exports = Tree;
+
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
 	 * Created by Rube on 15/4/3.
 	 */
 	var Global = __webpack_require__(9);
@@ -800,7 +903,7 @@
 
 	var UIComponentMixin = {
 	  getInitialState: function () {
-	    this.props._id = Global.getID();
+	    this.props._id = this.props.id || Global.getID();
 	    this.componentOperaInit();
 	    View.init.call(this.props, null);
 	    var style = this.props.attrs;
@@ -826,6 +929,7 @@
 	  },
 	  componentWillMount: function () {
 	    this.buildNodeTree(this.props._page, this.props._parent._id, this.props._id, this);
+	    this.ListenerInit();
 	  },
 	  shouldComponentUpdate: function (nextprops, nextstate) {
 	    if (nextstate.update) {
@@ -864,7 +968,41 @@
 	module.exports = UIComponentMixin;
 
 /***/ },
-/* 11 */
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by Rube on 15/4/8.
+	 */
+	var checkArea = __webpack_require__(9).util.checkArea;
+
+	var UIListenerMixin = {
+	  ListenerInit: function () {
+	    this.props.listenerPool = {};
+	  },
+	  addListener: function (event, fun) {
+	    this.props.listenerPool[event] = fun;
+	  },
+	  responseListener: function (event) {
+	    if (this.props.listenerPool[event]) {
+	      return this.props.listenerPool[event]();        //return true 向下及同级继续传递 false 立即停止传递
+	    }
+	  },
+	  checkListener: function (event, x, y) {
+	    var actual = this.state.actualStyle;
+	    if (this.props.listenerPool[event] && checkArea(actual.x, actual.y, actual.width, actual.height)) {
+	      return true;
+	    }
+	    return false;
+	  }
+	};
+
+	module.exports = UIListenerMixin;
+
+
+
+/***/ },
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -872,7 +1010,7 @@
 	 * RubeCanvas启动器,封装成page,压栈运行
 	 */
 
-	var Page = __webpack_require__(12);
+	var Page = __webpack_require__(14);
 	var Global = __webpack_require__(9);
 
 	/**
@@ -917,7 +1055,7 @@
 
 
 /***/ },
-/* 12 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -927,7 +1065,7 @@
 
 	var React = __webpack_require__(7);
 	var Global = __webpack_require__(9);
-	var Tree = __webpack_require__(13);
+	var Tree = __webpack_require__(10);
 
 	/**
 	 * 界面管理器
@@ -956,6 +1094,7 @@
 	    this._node = node;
 	  }
 	  React.render(this._node, documentNode);
+	  this._idTree.createList(null);
 	};
 
 	Page.prototype.getID = function () {
@@ -976,70 +1115,6 @@
 
 	module.exports = Page;
 
-
-
-/***/ },
-/* 13 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Created by Rube on 15/3/21.
-	 * 树型结构,用于构建page的id树等
-	 */
-
-	/**
-	 * Tree树型结构
-	 * _nodeStorage {object} 一个节点存储对象
-	 * _nodeMap {object} 一个节点引用存储对象,快速定位查找
-	 */
-	var Tree = function () {
-	  this._nodeMap = {};
-	  this.addNode(-1, -1, null);       //终止节点
-	};
-
-	/**
-	 * 添加节点
-	 * @param parentIndex {int} 父节点id值 (>=-1)
-	 * @param index {int} 当前节点id值 (>=-1)
-	 * @param value {*} 当前节点值
-	 */
-	Tree.prototype.addNode = function (parentIndex, index, value) {
-	  if (parentIndex < -1 || index < -1) {
-	    return new TypeError('parentIndex or index can not be lt -1');
-	  }
-	  var node = {parentIndex: parentIndex, index: index, value: value, children: []};
-	  this._nodeMap[index] = node;
-	  this._nodeMap[parentIndex].children.push(node);
-	};
-
-	/** 获取对应id的节点 **/
-	Tree.prototype.getNode = function (index) {
-	  return this._nodeMap[index];
-	};
-
-	/** 删除对应id的节点 **/
-	Tree.prototype.deleteNode = function (index) {
-	  var node = this._nodeMap[index];
-	  var parentNode = this._nodeMap[node.parentIndex];
-	  for (var i = 0; i < parentNode.children.length; i++) {
-	    if (parentNode.children[i].index === index) {
-	      Array.splice.call(parentNode.children, i, 1);
-	      break;
-	    }
-	  }
-	  delete this._nodeMap[index];
-	};
-
-	/** 更新节点信息 **/
-	Tree.prototype.updateNode = function (index, value) {
-	  this._nodeMap[index].value = value;
-	};
-
-	Tree.create = function () {
-	  return new Tree();
-	};
-
-	module.exports = Tree;
 
 
 /***/ }
