@@ -67,10 +67,17 @@ Tree.prototype.createList = function (listIndex) {
     cxt._nodeList.push(childrenNode);
   });
   if (listIndex == this._nodeList.length - 1) {
+    this._nodeList.reverse();
     return;
   } else {
     this.createList(listIndex + 1);
   }
+};
+
+Tree.prototype.iterationNode = function (func) {
+  Array.prototype.forEach.call(this._nodeList, function (node) {
+    func(node.value);
+  });
 };
 
 Tree.create = function () {

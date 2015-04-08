@@ -17,7 +17,7 @@ var UIListenerMixin = {
   },
   checkListener: function (event, x, y) {
     var actual = this.state.actualStyle;
-    if (this.props.listenerPool[event] && checkArea(actual.x, actual.y, actual.width, actual.height)) {
+    if (this.props.listenerPool[event] && checkArea(actual.x, actual.y, actual.width, actual.height, x, y)) {
       return true;
     }
     return false;

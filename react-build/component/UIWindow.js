@@ -1,8 +1,8 @@
 var React = require('React');
 var View = require('./../View');
 var UImixin = require('./../mixins/UImixin');
+var UIListener = require('./../mixins/UIListenerMixin');
 var Global = require('./../Global');
-var Tree = require('./../Tree');
 
 /** 屏幕原始宽高获取 **/
 var w = window.innerWidth
@@ -25,7 +25,7 @@ bodyStyle.padding = 0;
 bodyStyle.background = '#000';
 
 var UIWindow = React.createClass({displayName: "UIWindow",
-  mixins: [UImixin],
+  mixins: [UImixin, UIListener],
   /** 控件默认属性值 **/
   getDefaultProps: function () {
     return {
@@ -62,6 +62,7 @@ var UIWindow = React.createClass({displayName: "UIWindow",
   },
   componentWillMount: function () {
     this.buildNodeTree(this.props._page, -1, this.props._id, this);
+    this.ListenerInit();
     var canvas = document.createElement('canvas');
     var cxt = canvas.getContext('2d');
     /** 屏幕缩放计算 **/
@@ -95,10 +96,15 @@ var UIWindow = React.createClass({displayName: "UIWindow",
     Global.setContext(cxt);
     this.invalidate({actualStyle: style});
     canvas.addEventListener('touchstart', function (event) {
+      var touch = event.touches[0];
       event.preventDefault();
-      Tree.iterationBFS(context.props._page._idTree, function(node){
-        console.log(node);
-      },context._id);
+      context.props._page._idTree.iterationNode(function (node) {
+        if (node.checkListener('touchstart', touch.pageX, touch.pageY)) {
+          if (!node.responseListener('touchstart')) {
+            return;
+          }
+        }
+      });
       var touch = event.touches[0];
       var touchPosition = context.state.touchPosition;
       touchPosition['startX'] = touch.pageX;
